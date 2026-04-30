@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - 探索性因素分析 (EFA)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #16a085; }
+        .nav-back { text-decoration: none; color: #16a085; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #16a085; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #16a085; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        
+        /* 報表解讀專用樣式 */
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #e8f8f5; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #a3e4d7; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
+
+    <h1>🔍 探索性因素分析 (EFA)</h1>
+    <p><strong>研究目的：</strong>當你不確定 6 個問卷題目應該分成幾個維度時，請 Mplus 幫你試著萃取因素，看看哪種分類最合理。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (efadata.dat)</h2>
+        <pre id="dataContent">4 5 4 2 1 2
+5 5 4 3 2 3
+1 2 1 5 4 5
+2 3 2 4 5 4
+5 4 5 1 2 2</pre>
+        <button class="btn" onclick="downloadFile('efadata.dat', 'dataContent', 'msg1')">⬇️ 下載 efadata.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 下載語法檔 (efa_model.inp)</h2>
+        <p>⚠️ 注意：EFA <strong>不需要</strong>寫 <code>MODEL:</code> 區塊，因為結構是軟體幫你找的！</p>
+        <pre id="inpContent">TITLE: My First EFA;
+DATA: FILE IS efadata.dat;
+VARIABLE: 
+  NAMES ARE q1 q2 q3 q4 q5 q6;
+  USEVARIABLES ARE q1-q6;
+
+ANALYSIS: 
+  ! TYPE IS EFA 最小因素數 最大因素數;
+  TYPE IS EFA 1 2; 
+
+OUTPUT: STANDARDIZED;</pre>
+        <button class="btn" onclick="downloadFile('efa_model.inp', 'inpContent', 'msg2')">⬇️ 下載 efa_model.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: EFA 報表解讀 (看因素負荷量)</h2>
+        <p>在 EFA 中，我們最關心的是「題目到底怎麼分群」。往下捲動找到 <strong>GEOMIN ROTATED LOADINGS</strong> (旋轉後的因素負荷量) 區塊：</p>
+        
+        <pre>
+GEOMIN ROTATED LOADINGS
+                   1              2
+              ________       ________
+ Q1             <span class="highlight-green">0.852</span>         -0.041
+ Q2             <span class="highlight-green">0.789</span>          0.112
+ Q3             <span class="highlight-green">0.801</span>          0.055
+ Q4             0.104          <span class="highlight-green">0.765</span>
+ Q5             0.022          <span class="highlight-green">0.810</span>
+ Q6            -0.051          <span class="highlight-green">0.792</span>
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <ul>
+                <li><strong>尋找大於 0.4 的數值：</strong> Mplus 嘗試把 6 題分成 2 個因素 (Factor 1 和 Factor 2)。</li>
+                <li><span class="highlight-green">綠色高光部分</span>顯示：
+                    <ul>
+                        <li><strong>Q1, Q2, Q3</strong> 在第一個因素的負荷量 (Loading) 都高於 0.7，且在第二個因素很低。這代表它們完美地構成了一個維度 (例如：數學能力)。</li>
+                        <li><strong>Q4, Q5, Q6</strong> 則在第二個因素有很高的負荷量，構成了另一個維度 (例如：語文能力)。</li>
+                    </ul>
+                </li>
+                <li><strong>建構效度良好：</strong> 因為沒有出現「同時在兩個因素都高於 0.4」的題目 (這稱為交叉負荷 Cross-loading)，代表問卷題目區分度極佳！</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            const msg = document.getElementById(msgId);
+            msg.style.display = 'inline';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RP 教學 - 進階機器學習 (XGBoost & 模型調校)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #d35400; } /* 稍微深一點的橘色，代表進階 */
+        .nav-back { text-decoration: none; color: #d35400; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #d35400; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #d35400; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #fff3e0; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #ffe0b2; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回 RP 首頁</a>
+
+    <h1>🔥 進階機器學習：XGBoost 與超參數調校</h1>
+    <p><strong>研究目的：</strong>除了建立模型，我們還要讓模型發揮極限！這次我們使用 <strong>XGBoost</strong> 演算法，並透過「10 折交叉驗證」來尋找最佳的樹木數量（trees）與學習率（learn_rate）。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 概念準備</h2>
+        <p>這次我們直接使用 R 內建或先前的 <code>student_data.csv</code>，重點放在語法的升級。在執行此語法前，請確保您已安裝 <code>xgboost</code> 套件。</p>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 進階 R 語言建模語法 (Grid Search)</h2>
+        <p>💡 提示：在 <code>tidymodels</code> 中，如果我們不知道某個參數設定多少最好，可以寫上 <code>tune()</code>，讓電腦自己去「試錯」尋找最佳解。</p>
+        <pre id="inpContent">library(tidymodels)
+
+# 1. 切割資料與設定交叉驗證 (Cross-Validation)
+set.seed(123)
+# 假設 df 是我們的學生資料
+# 建立 10 折交叉驗證的樣本
+cv_folds <- vfold_cv(df, v = 10) 
+
+# 2. 設定 XGBoost 模型，並將參數設為 tune() 待調校
+xgb_spec <- boost_tree(
+  trees = tune(),       # 讓電腦找最佳樹的數量
+  learn_rate = tune()   # 讓電腦找最佳學習率
+) %>%
+  set_engine("xgboost") %>%
+  set_mode("classification")
+
+# 3. 設定參數嘗試的網格 (Grid)
+xgb_grid <- grid_regular(
+  trees(range = c(50, 500)),
+  learn_rate(range = c(-3, -1)), 
+  levels = 5
+)
+
+# 4. 開始尋找最佳參數 (這步會跑比較久)
+tune_res <- tune_grid(
+  xgb_spec,
+  Result ~ .,
+  resamples = cv_folds,
+  grid = xgb_grid
+)
+
+# 5. 印出表現最好的前五名參數組合
+show_best(tune_res, metric = "accuracy")</pre>
+        <button class="btn" onclick="downloadFile('ml_adv_script.R', 'inpContent', 'msg2')">⬇️ 下載進階 R 腳本</button>
+        <span id="msg2" class="success-msg">✅ 腳本已下載！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📊 Step 3: 模型效能與參數解讀</h2>
+        <p>執行 <code>show_best()</code> 後，R Console 會印出如下的表格，告訴你哪種組合的準確率最高：</p>
+        
+        <pre>
+ trees  learn_rate  .metric   .estimator  <span class="highlight-yellow">mean (準確度)</span>
+   <span class="highlight-green">275</span>       <span class="highlight-green">0.01</span>  accuracy       binary          <span class="highlight-yellow">0.965</span>
+   162       0.01  accuracy       binary          0.952
+   500       0.10  accuracy       binary          0.948
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <ul>
+                <li><strong>超參數調校 (Hyperparameter Tuning)：</strong> 就像是買了一台高級音響，<code>tune()</code> 就是讓電腦自動幫你轉動「高音」和「低音」的旋鈕，試聽哪一種組合音質最好。</li>
+                <li><strong>最佳組合：</strong> 表格第一行顯示，當我們種了 <span class="highlight-green">275 棵樹</span>，且學習率設定為 <span class="highlight-green">0.01</span> 時，模型在未知的資料上達到了 <span class="highlight-yellow">96.5%</span> 的最高準確度。</li>
+                <li><strong>為什麼要交叉驗證 (CV)？</strong> 為了避免模型「死背考古題（過度配適 Overfitting）」。10 折交叉驗證就像是給模型舉辦了 10 次模擬考，每次都拿不同的題目來測驗它，確保它的 96.5% 是真正的實力！</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            const msg = document.getElementById(msgId); msg.style.display = 'inline'; setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

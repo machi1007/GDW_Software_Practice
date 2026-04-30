@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - 中介與調節分析</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #27ae60; }
+        .nav-back { text-decoration: none; color: #27ae60; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #27ae60; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #27ae60; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #e9f7ef; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #d4efdf; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
+
+    <h1>🌿 中介效應分析 (Mediation Analysis)</h1>
+    <p><strong>研究目的：</strong>探討「X」是否透過「M」影響「Y」。例如：工時(X) 是否透過 壓力(M) 進而影響 健康(Y)？</p>
+    
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (medata.dat)</h2>
+        <pre id="dataContent">5 3 2
+7 5 1
+3 2 4
+8 6 1
+4 3 3</pre>
+        <button class="btn" onclick="downloadFile('medata.dat', 'dataContent', 'msg1')">⬇️ 下載 medata.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 下載語法檔 (mediation.inp)</h2>
+        <p>💡 關鍵技巧：使用 <code>MODEL INDIRECT</code> 讓 Mplus 自動幫你計算乘積項！</p>
+        <pre id="inpContent">TITLE: Mediation Model;
+DATA: FILE IS medata.dat;
+VARIABLE: NAMES ARE x m y;
+MODEL:
+  m ON x;  ! 路徑 a
+  y ON m;  ! 路徑 b
+  y ON x;  ! 路徑 c' (直接效應)
+
+MODEL INDIRECT:
+  y IND x; ! 一鍵算出 x -> m -> y 的中介效應！
+OUTPUT: STANDARDIZED CINTERVAL(BOOTSTRAP);</pre>
+        <button class="btn" onclick="downloadFile('mediation.inp', 'inpContent', 'msg2')">⬇️ 下載 mediation.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: 中介報表解讀 (間接效應)</h2>
+        <p>在中介模型中，我們不只要看路徑顯著，最重要的是看 <strong>TOTAL INDIRECT</strong> 的部分：</p>
+        
+        <pre>
+EFFECTS FROM X TO Y
+                   <span class="highlight-yellow">Estimate</span>       S.E.  Est./S.E.    <span class="highlight-green">P-Value</span>
+  Total            -0.612      0.154     -3.974      0.000
+  Total indirect   <span class="highlight-yellow">-0.428</span>      0.120     -3.566      <span class="highlight-green">0.000</span>
+  Direct (Y ON X)  -0.184      0.098     -1.877      0.061
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <ul>
+                <li><strong>間接效應 (Total Indirect)：</strong> 數值為 <span class="highlight-yellow">-0.428</span> 且 <span class="highlight-green">P-Value < 0.05</span>。這代表「中介效應存在」！X 確實會透過 M 來影響 Y。</li>
+                <li><strong>直接效應 (Direct)：</strong> 這裡 P-Value 為 0.061，不顯著。這意味著 X 對 Y 的影響「全部」都是透過 M 傳導過去的（這稱為完全中介）。</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            const msg = document.getElementById(msgId);
+            msg.style.display = 'inline';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - 試題反應理論 (IRT)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #3f51b5; }
+        .nav-back { text-decoration: none; color: #3f51b5; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #3f51b5; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #3f51b5; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #e8eaf6; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #c5cae9; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
+
+    <h1>🎯 試題反應理論 (IRT - 2PL Model)</h1>
+    <p><strong>研究目的：</strong>學生做了 5 題數學是非題 (0=錯, 1=對)。我們要算出每一題的「鑑別度 (能區分出學霸與學渣嗎？)」與「難度 (要多聰明才能答對？)」。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (irtdata.dat)</h2>
+        <pre id="dataContent">1 1 0 0 0
+1 1 1 0 1
+0 1 0 0 0
+1 1 1 1 1
+0 0 0 0 0</pre>
+        <button class="btn" onclick="downloadFile('irtdata.dat', 'dataContent', 'msg1')">⬇️ 下載 irtdata.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 下載語法檔 (irt_model.inp)</h2>
+        <p>💡 關鍵技巧：加上 <code>CATEGORICAL ARE</code>，Mplus 就會自動啟動 IRT 參數化估計。</p>
+        <pre id="inpContent">TITLE: 2PL IRT Model;
+DATA: FILE IS irtdata.dat;
+VARIABLE: 
+  NAMES ARE q1-q5;
+  CATEGORICAL ARE q1-q5; ! 宣告為類別變數 (0/1)
+
+MODEL:
+  ABILITY BY q1-q5*; ! 潛在特質 (能力) 測量這5題
+  ABILITY@1;         ! 固定變異數為 1 (IRT 標準做法)
+
+OUTPUT: STANDARDIZED;</pre>
+        <button class="btn" onclick="downloadFile('irt_model.inp', 'inpContent', 'msg2')">⬇️ 下載 irt_model.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: IRT 報表解讀 (鑑別度與難度)</h2>
+        <p>在報表底部的 <strong>IRT PARAMETERIZATION</strong> 區塊，Mplus 會直接吐出傳統的 IRT 參數：</p>
+        
+        <pre>
+IRT PARAMETERIZATION
+                   <span class="highlight-yellow">Estimate</span>       S.E.  Est./S.E.    <span class="highlight-green">P-Value</span>
+Item Discriminations (鑑別度 a)
+    Q1                <span class="highlight-yellow">1.854</span>      0.245      7.567      0.000
+    Q2                <span class="highlight-yellow">0.512</span>      0.110      4.654      0.000
+
+Item Difficulties (難度 b)
+    Q1                <span class="highlight-yellow">-1.240</span>     0.315     -3.936      0.000
+    Q2                <span class="highlight-yellow">2.105</span>      0.450      4.677      0.000
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <ul>
+                <li><strong>Discriminations (鑑別度 a)：</strong> 數值越大，代表這題越能區分出能力高低的人。
+                    <ul>
+                        <li>Q1 的鑑別度高達 1.854（好題目）。</li>
+                        <li>Q2 只有 0.512（鑑別度稍低，可能題目出得有點模糊）。</li>
+                    </ul>
+                </li>
+                <li><strong>Difficulties (難度 b)：</strong> 數值為正代表難，數值為負代表簡單。
+                    <ul>
+                        <li>Q1 是 <span class="highlight-yellow">-1.240</span>，這是一題簡單的送分題。</li>
+                        <li>Q2 是 <span class="highlight-yellow">2.105</span>，這是一題超難的魔王題，能力值要很高的人才答得對。</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            // 下載邏輯同前
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            const msg = document.getElementById(msgId); msg.style.display = 'inline'; setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

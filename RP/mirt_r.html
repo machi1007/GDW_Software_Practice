@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RP 教學 - 多向度 IRT (MIRT)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #673ab7; border-bottom: 2px solid #673ab7; padding-bottom: 10px; }
+        .nav-back { text-decoration: none; color: #673ab7; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #673ab7; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; }
+        .explanation-box { background: #ede7f6; padding: 15px; border-radius: 6px; border: 1px solid #d1c4e9; margin-top: 15px; }
+        .highlight-purple { color: #673ab7; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="nav-back">← 返回 RP 首頁</a>
+    <h1>🎯 多向度試題反應理論 (MIRT)</h1>
+    <p><strong>研究目的：</strong>當一份試卷同時測量多種能力（如：語文與邏輯）且兩者相關時，MIRT 比單向度 IRT 更精準。</p>
+
+    <div class="step-container">
+        <h2>📝 R 語言執行語法 (使用 mirt 套件)</h2>
+        <pre>
+library(mirt)
+
+# 1. 定義模型結構 (假設 Q1-Q5 測量 F1, Q6-Q10 測量 F2)
+smodel <- 'F1 = 1-5
+           F2 = 6-10
+           COV = F1*F2'
+
+# 2. 估計探索性或驗證性 MIRT 模型
+fit_mirt <- mirt(data = mydata, model = smodel, itemtype = '2PL')
+
+# 3. 查看因素相關性與參數
+summary(fit_mirt)</pre>
+    </div>
+
+    <div class="step-container">
+        <h2>📊 報表解讀 (因素相關性)</h2>
+        <pre>
+              F1     F2
+F1         1.000
+F2         <span class="highlight-purple">0.720</span>  1.000
+        </pre>
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <ul>
+                <li><strong>Factor Correlation = <span class="highlight-purple">0.720</span>：</strong> 這代表「能力 1」與「能力 2」有高度的正相關。這很合理，通常語文能力好的學生，邏輯理解力也不會太差。</li>
+                <li><strong>交叉負荷 (Cross-loadings)：</strong> 如果某題在 F1 和 F2 都有很高的 a 參數，代表這題「不純」，同時測量了兩種能力。</li>
+                <li><strong>模型適配度：</strong> MIRT 可以比較「單向度」與「多向度」模型哪個更好 (使用 <code>anova(fit_single, fit_mirt)</code>)。</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

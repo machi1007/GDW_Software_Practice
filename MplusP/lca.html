@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - 潛在類別分析 (LCA)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2980b9; }
+        .nav-back { text-decoration: none; color: #2980b9; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #2980b9; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #2980b9; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #ebf5fb; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #aed6f1; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
+
+    <h1>👥 潛在類別分析 (LCA / LPA)</h1>
+    <p><strong>研究目的：</strong>將受試者根據他們的反應模式「分群」。例如：根據消費者的愛好，把他們分成「價格敏感型」與「品質追求型」。</p>
+    
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (lcadata.dat)</h2>
+        <p>資料為 5 個行為指標的得分：</p>
+        <pre id="dataContent">5 5 1 1 1
+1 1 5 5 4
+5 4 2 1 2
+2 1 4 5 5</pre>
+        <button class="btn" onclick="downloadFile('lcadata.dat', 'dataContent', 'msg1')">⬇️ 下載 lcadata.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 下載語法檔 (lca_model.inp)</h2>
+        <pre id="inpContent">TITLE: LCA Model;
+DATA: FILE IS lcadata.dat;
+VARIABLE: 
+  NAMES ARE item1-item5;
+  CLASSES = c(2); ! 試著把人分成 2 群
+
+ANALYSIS: 
+  TYPE = MIXTURE; ! 開啟混合模型引擎
+
+OUTPUT: TECH11; ! 請求 LMR 檢定，判斷分幾群才對</pre>
+        <button class="btn" onclick="downloadFile('lca_model.inp', 'inpContent', 'msg2')">⬇️ 下載 lca_model.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: LCA 報表解讀 (分群結果)</h2>
+        <p>LCA 報表最重要的是看 <strong>FINAL CLASS COUNTS</strong>，確認每一群各有多少人：</p>
+        
+        <pre>
+FINAL CLASS COUNTS AND PROPORTIONS
+    Class 1          <span class="highlight-yellow">120</span>       (0.60)
+    Class 2          <span class="highlight-yellow">80</span>        (0.40)
+
+CLASSIFICATION QUALITY
+    Entropy          <span class="highlight-green">0.854</span>
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <ul>
+                <li><strong>Class Counts (人數分佈)：</strong> 你的 200 個樣本中，有 <span class="highlight-yellow">120 人</span> 被歸類在第一群，<span class="highlight-yellow">80 人</span> 在第二群。</li>
+                <li><strong>Entropy (熵值)：</strong> 這代表分類的「精準度」。<span class="highlight-green">大於 0.8</span> 代表分類分得很乾淨，不會有人處於模稜兩可的地帶。</li>
+                <li><strong>下一步：</strong> 接著你要去看這兩群人在 item1~item5 的平均數差異，來給這兩群人取名字（例如：第一群叫「節儉型」，第二群叫「享樂型」）。</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            const msg = document.getElementById(msgId);
+            msg.style.display = 'inline';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

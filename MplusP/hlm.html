@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - 多層次模型 (HLM)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #c0392b; }
+        .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        
+        /* 報表解讀專用樣式 */
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
+        .level-title { font-weight: bold; color: #922b21; border-bottom: 1px solid #e6b0aa; padding-bottom: 5px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
+
+    <h1>🏢 多層次模型 (HLM / Two-Level Model)</h1>
+    <p><strong>研究目的：</strong>學生被嵌套在班級裡。探討：(Level 1) 學生「社經地位(SES)」能否預測數學成績？ (Level 2) 老師「教學年資(T_EXP)」能否預測班級的整體平均數學成績？</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (hlmdata.dat)</h2>
+        <p>資料格式：班級ID(Level 2), 數學成績(Y), 社經地位(Level 1), 老師年資(Level 2)</p>
+        <pre id="dataContent">1 80 5 5
+1 85 6 5
+1 78 4 5
+2 90 7 10
+2 92 8 10
+2 88 6 10</pre>
+        <button class="btn" onclick="downloadFile('hlmdata.dat', 'dataContent', 'msg1')">⬇️ 下載 hlmdata.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 下載語法檔 (hlm_model.inp)</h2>
+        <pre id="inpContent">TITLE: My HLM Model;
+DATA: FILE IS hlmdata.dat;
+VARIABLE: 
+  NAMES ARE class_id math ses t_exp;
+  USEVARIABLES ARE class_id math ses t_exp;
+  CLUSTER IS class_id;  ! 群聚變數 (Level 2)
+  WITHIN ARE ses;       ! 個體變數 (Level 1)
+  BETWEEN ARE t_exp;    ! 群體變數 (Level 2)
+
+ANALYSIS: 
+  TYPE IS TWOLEVEL; 
+
+MODEL: 
+  %WITHIN%
+  math ON ses; 
+
+  %BETWEEN%
+  math ON t_exp;
+
+OUTPUT: STANDARDIZED;</pre>
+        <button class="btn" onclick="downloadFile('hlm_model.inp', 'inpContent', 'msg2')">⬇️ 下載 hlm_model.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: HLM 報表解讀 (雙層次分析)</h2>
+        <p>因為資料被分成了兩層，報表的 <strong>MODEL RESULTS</strong> 也會明確地切成上下兩塊：</p>
+        
+        <pre>
+MODEL RESULTS
+                   <span class="highlight-yellow">Estimate</span>       S.E.  Est./S.E.    <span class="highlight-green">P-Value</span>
+
+<strong style="color:#d35400;">Within Level</strong> (第一層：個體/學生)
+ MATH     ON
+    SES               <span class="highlight-yellow">0.425</span>      0.112      3.794      <span class="highlight-green">0.000</span>
+
+<strong style="color:#d35400;">Between Level</strong> (第二層：群體/班級)
+ MATH     ON
+    T_EXP             <span class="highlight-yellow">0.612</span>      0.185      3.308      <span class="highlight-green">0.001</span>
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <div class="level-title">1. Within Level (個體層次)</div>
+            <p>看 <code>MATH ON SES</code>。<span class="highlight-green">P-Value = 0.000 (< 0.05)</span>，這代表在「同一個班級內部」比較時，學生的社經地位每提高 1 單位，數學成績預計顯著提升 <span class="highlight-yellow">0.425</span> 分。</p>
+
+            <div class="level-title">2. Between Level (群體層次)</div>
+            <p>看 <code>MATH ON T_EXP</code>。請注意，這裡的 MATH 已經被 Mplus 轉成「班級平均成績」了。<span class="highlight-green">P-Value = 0.001 (< 0.05)</span>，這代表班級之間比較時，老師教學年資每高 1 年，該班的「平均」數學成績會顯著高出 <span class="highlight-yellow">0.612</span> 分。</p>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            const msg = document.getElementById(msgId);
+            msg.style.display = 'inline';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

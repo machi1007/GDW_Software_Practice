@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - 廣義結構方程式 (GSEM)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #00838f; }
+        .nav-back { text-decoration: none; color: #00838f; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #00838f; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #00838f; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #e0f7fa; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #b2ebf2; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
+
+    <h1>🧮 廣義結構方程式模型 (GSEM - Poisson)</h1>
+    <p><strong>研究目的：</strong>一般的迴歸只能處理連續分數。如果依變數是「次數」怎麼辦？我們用 GSEM 探討「壓力指數 (stress)」是否能預測員工「請假次數 (absent)」。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (gsemdata.dat)</h2>
+        <pre id="dataContent">80 5
+95 8
+50 0
+70 2
+65 1</pre>
+        <button class="btn" onclick="downloadFile('gsemdata.dat', 'dataContent', 'msg1')">⬇️ 下載 gsemdata.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 下載語法檔 (gsem_model.inp)</h2>
+        <p>💡 關鍵技巧：宣告 <code>COUNT ARE</code>，Mplus 會自動切換成 Poisson (卜瓦松) 迴歸引擎。</p>
+        <pre id="inpContent">TITLE: GSEM Count Model;
+DATA: FILE IS gsemdata.dat;
+VARIABLE: 
+  NAMES ARE stress absent;
+  COUNT ARE absent; ! 宣告依變數為計數資料 (發生次數)
+
+MODEL:
+  absent ON stress; ! 請假次數 被 壓力 預測
+
+OUTPUT: STANDARDIZED;</pre>
+        <button class="btn" onclick="downloadFile('gsem_model.inp', 'inpContent', 'msg2')">⬇️ 下載 gsem_model.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: GSEM 報表解讀</h2>
+        <p>因為使用了 Poisson 分佈，這裡的係數 (Estimate) 指的是「對數勝算 (Log-odds)」，解讀方式稍微不同：</p>
+        
+        <pre>
+MODEL RESULTS
+                   <span class="highlight-yellow">Estimate</span>       S.E.  Est./S.E.    <span class="highlight-green">P-Value</span>
+ ABSENT   ON
+    STRESS            <span class="highlight-yellow">0.052</span>      0.015      3.466      <span class="highlight-green">0.001</span>
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <ul>
+                <li><span class="highlight-green">P-Value = 0.001</span>：代表壓力確實能顯著預測請假次數。</li>
+                <li><span class="highlight-yellow">Estimate = 0.052</span>：在 Poisson 迴歸中，這代表壓力每增加 1 分，請假次數的「對數」會增加 0.052。</li>
+                <li><strong>進階轉換：</strong> 如果你取指數 $e^{0.052} \approx 1.053$，這代表壓力每高 1 分，員工請假的「發生率 (Incidence Rate)」就會增加約 5.3%！</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            const msg = document.getElementById(msgId); msg.style.display = 'inline'; setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RP 教學 - 零套件文字探勘 (Base R)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #3f51b5; border-bottom: 2px solid #3f51b5; padding-bottom: 10px; }
+        .nav-back { text-decoration: none; color: #3f51b5; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 5px solid #3f51b5; }
+        pre { background: #282c34; color: #abb2bf; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Fira Code', 'Courier New', monospace; line-height: 1.5; }
+        .btn { background-color: #3f51b5; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #2e7d32; font-weight: bold; margin-left: 10px; display: none; }
+        .explanation-box { background: #e8eaf6; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #c5cae9; }
+        .highlight-blue { font-weight: bold; color: #3f51b5; }
+        .badge { display: inline-block; background: #4caf50; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; vertical-align: middle; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回 RP 首頁</a>
+
+    <h1>📝 文字探勘：讓學生的回饋「說話」 <span class="badge">零套件無敵版</span></h1>
+    <p><strong>研究實例：分析學生的心理回饋與學習動機。</strong><br>
+    在資料科學中，有時候最簡單的工具最有效！為了徹底告別「套件不相容」與「版本更新」的惡夢，本篇教學將採用 <strong>100% R 語言內建語法 (Base R)</strong>。不需要安裝任何外部套件，保證隨插即用、一鍵出圖。</p>
+
+    <div class="step-container">
+        <h2>📝 執行語法：極簡的暴力美學</h2>
+        <p>我們將模擬已經初步加入空格的文字資料，利用內建的 <code>strsplit</code> 進行切割，再用 <code>barplot</code> 畫出高頻詞彙。</p>
+        
+        <pre id="inpContent"># ==========================================
+# 零套件文字探勘 (永遠不會報錯的 Base R)
+# ==========================================
+
+# 1. 建立「已初步斷詞」的學生回饋資料 (使用空格分隔)
+feedback_data <- c(
+  "老師 教得 很好 內容 充實 喜歡",
+  "壓力 大 作業 太多 挫折",
+  "課程 有趣 同儕 互動 多 學到 東西",
+  "聽不懂 太難 老師 講太快 想 放棄",
+  "未來 幫助 老師 希望 多 開 課",
+  "有趣 喜歡 互動 充實 幫助",
+  "壓力 挫折 放棄 太難"
+)
+
+# 2. 進行文字切割與整理
+# unlist: 將切割後的文字攤平成單一長條清單
+all_words <- unlist(strsplit(feedback_data, " "))
+
+# 3. 排除雜訊
+# 過濾掉只有 1 個字的無意義詞 (例如：大、多、想、課)
+valid_words <- all_words[nchar(all_words) > 1]
+
+# 4. 計算詞彙出現頻率並排序
+word_freq <- table(valid_words)
+word_freq <- sort(word_freq, decreasing = TRUE)
+
+# 印出前 5 名高頻關鍵字看看結果
+print(head(word_freq, 5))
+
+# 5. 繪製精美的長條圖
+# 自動判斷系統：如果是 Windows 就用微軟正黑體，避免中文變成方塊亂碼
+if(.Platform$OS.type == "windows") { par(family = "Microsoft JhengHei") }
+
+# 取前 8 名詞彙作圖
+barplot(
+  word_freq[1:8], 
+  col = "#3f51b5",         # 使用質感的靛藍色
+  border = NA,             # 移除長條圖黑框，更加現代感
+  main = "學生期末回饋：高頻關鍵字分析", 
+  ylab = "出現次數",
+  las = 2,                 # 標籤垂直顯示，避免字體重疊
+  cex.names = 0.9          # 微調底部字體大小
+)</pre>
+        <button class="btn" onclick="downloadFile('baseR_textMining.R', 'inpContent', 'msg2')">⬇️ 下載 R 腳本 (保證能跑)</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！直接貼進 R 執行吧！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📊 報表解讀：從文字看見心理狀態</h2>
+        <div class="explanation-box">
+            <h3>💡 診斷結果分析：</h3>
+            <ul>
+                <li><strong>正向動機指標：</strong> <span class="highlight-blue">「老師」、「有趣」、「充實」</span> 位居高位。這代表該課程的核心吸引力在於教師本人的魅力與互動式教學。</li>
+                <li><strong>負向壓力警報：</strong> 排行榜中也出現了 <span class="highlight-blue">「壓力」、「挫折」、「太難」</span>。</li>
+                <li><strong>教育心理學上的建議：</strong> 數據顯示學生的反應呈現「雙峰現象」（極度喜歡 vs. 極度挫折）。建議授課教師在維持有趣的互動之餘，需特別留意低成就學生的認知負荷，並考慮提供額外的補救教學。</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            const msg = document.getElementById(msgId); msg.style.display = 'inline'; setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

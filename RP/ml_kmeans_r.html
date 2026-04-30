@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RP 教學 - 機器學習的分群 (K-Means)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #8e44ad; border-bottom: 2px solid #8e44ad; padding-bottom: 10px; }
+        .nav-back { text-decoration: none; color: #8e44ad; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #8e44ad; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; line-height: 1.5; }
+        .explanation-box { background: #f3e5f5; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #e1bee7; }
+        .highlight-purple { font-weight: bold; color: #6a1b9a; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回 RP 首頁</a>
+
+    <h1>🧩 機器學習的 LCA：K-Means 自動分群</h1>
+    <p><strong>研究實例：發掘學生的隱藏類型。</strong><br>
+    就像 Mplus 裡的 LCA (潛在類別分析) 一樣，我們有一批學生的「數學成績」與「語文成績」，但我們不知道他們可以分成幾類。我們讓 K-Means 演算法自動幫我們找出「學生的潛在分群」。</p>
+
+    <div class="step-container">
+        <h2>📝 R 語言執行語法 (使用內建 kmeans 函數)</h2>
+        <p>這是一個「無監督學習」的例子，代表我們「沒有」先給電腦標準答案(沒有及格/不及格的標籤)，讓電腦自己找同類。</p>
+        <pre>
+# 1. 準備資料：只有數學與語文成績 (沒有任何標籤)
+# df <- my_student_scores 
+
+# 2. 執行 K-Means 分群，我們請電腦幫忙分成 3 群 (centers = 3)
+set.seed(123)
+km_result <- kmeans(df[, c("Math", "Language")], centers = 3, nstart = 20)
+
+# 3. 查看這 3 群的平均分數 (Cluster Centers)
+km_result$centers
+
+# 4. 把分群結果畫出來 (使用 ggplot2)
+library(ggplot2)
+df$Cluster <- as.factor(km_result$cluster)
+ggplot(df, aes(x = Math, y = Language, color = Cluster)) + 
+  geom_point(size = 3) + 
+  theme_minimal() +
+  ggtitle("學生潛在類型自動分群 (K-Means)")</pre>
+    </div>
+
+    <div class="step-container">
+        <h2>📊 報表解讀 (跟 LCA 概念完美對應)</h2>
+        <p>執行 <code>km_result$centers</code> 後，R 會印出各群的平均分數：</p>
+        <pre>
+       Math    Language
+1      <span class="highlight-purple">88.5</span>        85.2   (第一群)
+2      45.2        42.1   (第二群)
+3      90.1        <span class="highlight-purple">40.5</span>   (第三群)
+        </pre>
+        
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯 (與 LCA 的對話)：</h3>
+            <ul>
+                <li><strong>第一群 (Cluster 1)：</strong> 數學 88.5，語文 85.2。這群是<strong>「雙科優異型」</strong>學霸。</li>
+                <li><strong>第二群 (Cluster 2)：</strong> 數學 45.2，語文 42.1。這群是<strong>「雙科待救型」</strong>學生。</li>
+                <li><strong>第三群 (Cluster 3)：</strong> 數學 90.1，語文 40.5。這群是典型的<strong>「嚴重偏科型 (理科腦)」</strong>。</li>
+            </ul>
+            <p><strong>🔥 Mplus LCA vs. 機器學習 K-Means：</strong><br>
+            您以前在 Mplus 做 LCA，是用「機率模型」來算學生歸屬某個潛在類別的機率。而機器學習的 K-Means 則是用「空間距離」來算，把特徵相近的學生圈在一起。兩者的目的完全一樣：<strong>從雜亂無章的數據中，探索出有意義的潛在分群！</strong>這就是為什麼您會覺得它像 EFA 的原因了！</p>
+        </div>
+    </div>
+
+</body>
+</html>

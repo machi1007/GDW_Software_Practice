@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RP 教學 - 認知診斷模型 (CDM)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #b71c1c; border-bottom: 2px solid #b71c1c; padding-bottom: 10px; }
+        .nav-back { text-decoration: none; color: #b71c1c; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #b71c1c; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; }
+        .explanation-box { background: #ffebee; padding: 15px; border-radius: 6px; border: 1px solid #ffcdd2; margin-top: 15px; }
+        .highlight-red { color: #b71c1c; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="nav-back">← 返回 RP 首頁</a>
+    <h1>🧠 認知診斷模型 (CDM: DINA Model)</h1>
+    <p><strong>研究目的：</strong>不只是給分數，我們要診斷學生是否掌握了特定的「屬性 (Attributes)」。例如：加法、減法、乘法。</p>
+
+    <div class="step-container">
+        <h2>📝 R 語言執行語法 (使用 GDINA 套件)</h2>
+        <pre>
+library(GDINA)
+
+# 1. 準備反應資料 (dat) 與 Q-matrix (Q)
+# 假設有 5 題，測量 3 個屬性
+dat <- my_response_data
+Q <- my_q_matrix
+
+# 2. 估計 DINA 模型
+mod_dina <- GDINA(dat = dat, Q = Q, model = "DINA")
+
+# 3. 查看題目參數 (估計 Guessing 與 Slipping)
+itemparm(mod_dina)
+
+# 4. 取得學生屬性掌握機率
+person_estimates <- personparm(mod_dina)</pre>
+    </div>
+
+    <div class="step-container">
+        <h2>📊 報表解讀 (題目參數)</h2>
+        <pre>
+       <span class="highlight-red">guessing</span>    <span class="highlight-red">slipping</span>
+Item 1   0.120       0.050
+Item 2   0.250       0.110
+        </pre>
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <ul>
+                <li><strong>Guessing (猜測度)：</strong> 指「沒掌握屬性」卻答對的機率。Item 1 是 0.12，代表學生不會也能矇對的機率很低，題目品質不錯！</li>
+                <li><strong>Slipping (失誤度)：</strong> 指「掌握了屬性」卻答錯的機率。如果數值太高 (如 > 0.2)，代表題目可能有陷阱或語意不清。</li>
+                <li><strong>診斷價值：</strong> CDM 的精隨在於透過 Q-matrix，我們可以告訴老師：這個學生「加法」OK，但「乘法」還需要加強。</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

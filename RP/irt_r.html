@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R Studio 教學 - 試題反應理論 (IRT)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #3f51b5; }
+        .nav-back { text-decoration: none; color: #3f51b5; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #3f51b5; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #3f51b5; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #e8eaf6; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #c5cae9; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
+
+    <h1>🎯 試題反應理論 (IRT - 2PL Model in R)</h1>
+    <p><strong>研究目的：</strong>學生做了 5 題數學是非題 (0=錯, 1=對)。我們要使用 R 語言的 <code>mirt</code> 套件，算出每一題的「鑑別度」與「難度」。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 準備資料檔 (irtdata.csv)</h2>
+        <pre id="dataContent">Q1,Q2,Q3,Q4,Q5
+1,1,0,0,0
+1,1,1,0,1
+0,1,0,0,0
+1,1,1,1,1
+0,0,0,0,0</pre>
+        <button class="btn" onclick="downloadFile('irtdata.csv', 'dataContent', 'msg1')">⬇️ 下載 irtdata.csv</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: R 語言執行語法</h2>
+        <p>💡 關鍵技巧：載入 <code>mirt</code> 套件後，設定 <code>itemtype = '2PL'</code>，並在提取參數時加上 <code>IRTpars = TRUE</code> 來轉換為傳統的 a, b 參數。</p>
+        <pre id="inpContent"># 1. 載入套件與資料
+library(mirt)
+mydata <- read.csv("irtdata.csv")
+
+# 2. 配適雙參數邏輯斯模型 (2PL)
+# '1' 代表單一向度
+fit2pl <- mirt(data = mydata, model = 1, itemtype = '2PL')
+
+# 3. 提取傳統 IRT 參數 (a:鑑別度, b:難度)
+coef(fit2pl, IRTpars = TRUE, simplify = TRUE)$items</pre>
+        <button class="btn" onclick="downloadFile('irt_script.R', 'inpContent', 'msg2')">⬇️ 下載 irt_script.R</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: R 報表解讀 (鑑別度與難度)</h2>
+        <p>執行上述 <code>coef()</code> 函數後，R Console 會印出如下的矩陣結果：</p>
+        
+        <pre>
+          <span class="highlight-yellow">a</span>          <span class="highlight-yellow">b</span>       g       u
+Q1    <span class="highlight-green">1.854</span>     <span class="highlight-green">-1.240</span>       0       1
+Q2    <span class="highlight-green">0.512</span>      <span class="highlight-green">2.105</span>       0       1
+Q3    1.200     -0.500       0       1
+Q4    0.950      1.100       0       1
+Q5    1.420      0.350       0       1
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <ul>
+                <li><strong>參數 a (鑑別度 Discriminations)：</strong> 數值越大越好。
+                    <ul>
+                        <li>Q1 的鑑別度高達 <span class="highlight-green">1.854</span>，是一題能有效區分學霸與學渣的好題目。</li>
+                        <li>Q2 只有 <span class="highlight-green">0.512</span>，鑑別度偏低。</li>
+                    </ul>
+                </li>
+                <li><strong>參數 b (難度 Difficulties)：</strong> 數值為正代表難，負代表簡單。
+                    <ul>
+                        <li>Q1 是 <span class="highlight-green">-1.240</span>，這是一題偏簡單的題目。</li>
+                        <li>Q2 是 <span class="highlight-green">2.105</span>，數值很高，代表這是一題超難的魔王題！</li>
+                    </ul>
+                </li>
+                <li><strong>參數 g 與 u：</strong> 分別代表猜測度 (Guessing) 與失誤度 (Upper asymptote)。因為我們設定的是 2PL，所以這兩個值會被固定在 0 和 1。</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            const msg = document.getElementById(msgId); msg.style.display = 'inline'; setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

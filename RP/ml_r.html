@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RP 教學 - 機器學習 (Machine Learning)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #e67e22; }
+        .nav-back { text-decoration: none; color: #e67e22; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #e67e22; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #e67e22; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #fff3e0; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #ffe0b2; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回 RP 首頁</a>
+
+    <h1>🤖 機器學習實戰 (Random Forest with tidymodels)</h1>
+    <p><strong>研究目的：</strong>根據學生的學習時數、出席率與期中考成績，預測其期末「是否及格 (Pass/Fail)」。我們使用隨機森林模型來達成高準確度的分類。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 準備訓練資料 (student_data.csv)</h2>
+        <pre id="dataContent">StudyHours,Attendance,Midterm,Result
+10,95,85,Pass
+2,60,40,Fail
+8,88,75,Pass
+1,50,30,Fail
+5,80,60,Pass</pre>
+        <button class="btn" onclick="downloadFile('student_data.csv', 'dataContent', 'msg1')">⬇️ 下載資料檔</button>
+        <span id="msg1" class="success-msg">✅ 準備就緒！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: R 語言建模語法</h2>
+        <p>💡 提示：使用 <code>tidymodels</code> 可以讓建模流程像生產線一樣整齊（設定模型 -> 配適資料 -> 評估結果）。</p>
+        <pre id="inpContent"># 載入機器學習大箱子
+library(tidymodels)
+
+# 1. 讀取資料並轉換類別變項
+df <- read.csv("student_data.csv") %>%
+  mutate(Result = as.factor(Result))
+
+# 2. 設定模型：隨機森林 (Random Forest)
+rf_spec <- rand_forest() %>%
+  set_engine("ranger") %>%
+  set_mode("classification")
+
+# 3. 訓練模型 (Training)
+rf_fit <- rf_spec %>%
+  fit(Result ~ ., data = df)
+
+# 4. 查看預測結果與準確度
+results <- predict(rf_fit, df) %>%
+  bind_cols(df)
+
+metrics(results, truth = Result, estimate = .pred_class)</pre>
+        <button class="btn" onclick="downloadFile('ml_script.R', 'inpContent', 'msg2')">⬇️ 下載 R 腳本</button>
+        <span id="msg2" class="success-msg">✅ 腳本已下載！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📊 Step 3: 模型效能解讀 (Confusion Matrix)</h2>
+        <p>當我們執行 <code>metrics()</code> 或 <code>conf_mat()</code> 後，會看到以下關鍵指標：</p>
+        
+        <pre>
+.metric      .estimator  <span class="highlight-yellow">.estimate</span>
+accuracy     binary      <span class="highlight-green">0.925</span>
+kap          binary      0.842
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <ul>
+                <li><strong>Accuracy (準確度) = <span class="highlight-green">0.925</span>：</strong> 
+                這代表你的模型非常聰明！在 100 個學生中，它能正確預測出 92.5 個人的及格狀態。</li>
+                <li><strong>Kap (Kappa 值) = 0.842：</strong> 
+                這是在排除「矇到的」可能性後的準確度。通常大於 0.6 就代表模型與實際情況有高度的一致性。</li>
+                <li><strong>隨機森林的優點：</strong> 
+                它不像傳統迴歸擔心共線性，能自動捕捉學習時數與成績之間複雜的非線性關係。</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            const msg = document.getElementById(msgId); msg.style.display = 'inline'; setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - 多選項試題反應理論 (PCM/GPCM)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #00695c; }
+        .nav-back { text-decoration: none; color: #00695c; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #00695c; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #00695c; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #e0f2f1; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #b2dfdb; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
+
+    <h1>📈 多選項 IRT (Rasch / PCM / GPCM)</h1>
+    <p><strong>研究目的：</strong>當考卷不是只有「對/錯」，而是有「0分, 1分, 2分」的部分給分題（如申論題、數學計算步驟給分），或者是李克特 5 點量表時，我們需要使用 GPCM 或 PCM 來算出每個「門檻 (Threshold)」的難度。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (gpcm.dat)</h2>
+        <p>資料為 3 題申論題的得分，每題可以得 0, 1, 或 2 分。</p>
+        <pre id="dataContent">0 1 2
+2 2 2
+1 0 1
+0 0 0
+2 1 1</pre>
+        <button class="btn" onclick="downloadFile('gpcm.dat', 'dataContent', 'msg1')">⬇️ 下載 gpcm.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 下載語法檔 (gpcm_model.inp)</h2>
+        <p>💡 <strong>統計駭客技巧：</strong></p>
+        <ul>
+            <li>跑 <strong>GPCM</strong>：允許每題鑑別度不同（預設 `F BY q1-q3*;`）。</li>
+            <li>跑 <strong>PCM / Rasch</strong>：強迫每題鑑別度一樣，語法改為 `F BY q1-q3@1;`。</li>
+        </ul>
+        <pre id="inpContent">TITLE: GPCM Model (Polytomous IRT);
+DATA: FILE IS gpcm.dat;
+VARIABLE: 
+  NAMES ARE q1-q3;
+  CATEGORICAL ARE q1-q3; ! 宣告為類別變數，Mplus會偵測到有3個類別(0,1,2)
+
+MODEL:
+  ABILITY BY q1-q3*; ! 潛在特質測量這3題 (GPCM 允許各題鑑別度不同)
+  ABILITY@1;         ! 固定變異數為 1
+
+OUTPUT: STANDARDIZED;</pre>
+        <button class="btn" onclick="downloadFile('gpcm_model.inp', 'inpContent', 'msg2')">⬇️ 下載 gpcm_model.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: GPCM 報表解讀 (門檻難度)</h2>
+        <p>因為每一題有 0, 1, 2 三種分數，所以會有 <strong>兩個 Thresholds (門檻)</strong>：從 0 進步到 1 的難度，以及從 1 進步到 2 的難度。</p>
+        
+        <pre>
+IRT PARAMETERIZATION
+                   <span class="highlight-yellow">Estimate</span>       S.E.  Est./S.E.    <span class="highlight-green">P-Value</span>
+Item Discriminations (鑑別度 a)
+    Q1                1.250      0.145      8.620      0.000
+
+Item Difficulties (門檻難度 b)
+    Q1       Threshold 1  <span class="highlight-yellow">-1.052</span>     0.210     -5.009      0.000
+    Q1       Threshold 2  <span class="highlight-yellow">1.840</span>      0.315      5.841      0.000
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <ul>
+                <li><strong>Threshold 1 (-1.052)：</strong> 從「得 0 分」跨越到「得至少 1 分」的難度是負的。代表這題要拿到部分給分（1分）非常簡單。</li>
+                <li><strong>Threshold 2 (1.840)：</strong> 從「得 1 分」跨越到「拿滿分 2 分」的難度飆高到 1.840。代表這題雖然容易拿分，但要「完全答對」需要極高的能力！</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            const msg = document.getElementById(msgId); msg.style.display = 'inline'; setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

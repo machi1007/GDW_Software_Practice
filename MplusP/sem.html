@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - 結構方程式模型 (SEM)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #e67e22; }
+        .nav-back { text-decoration: none; color: #e67e22; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #e67e22; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #e67e22; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        
+        /* 報表解讀專用樣式 */
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #fdf2e9; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #fad7a1; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
+
+    <h1>🌐 結構方程式模型 (SEM)</h1>
+    <p><strong>研究目的：</strong>結合 CFA 與迴歸。探討潛在的「數學能力」與「語文能力」，是否能預測潛在的「邏輯表現 (Logic)」。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (semdata.dat)</h2>
+        <pre id="dataContent">4 5 4 2 1 2 4 5
+5 5 4 3 2 3 5 4
+1 2 1 5 4 5 2 1
+2 3 2 4 5 4 3 2
+5 4 5 1 2 2 4 4</pre>
+        <button class="btn" onclick="downloadFile('semdata.dat', 'dataContent', 'msg1')">⬇️ 下載 semdata.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 下載語法檔 (sem_model.inp)</h2>
+        <pre id="inpContent">TITLE: My Ultimate SEM;
+DATA: FILE IS semdata.dat;
+VARIABLE: 
+  NAMES ARE q1-q6 y1 y2;
+  USEVARIABLES ARE q1-q6 y1 y2;
+
+MODEL: 
+  ! --- 1. CFA 測量模型 (定義潛在變數) ---
+  MATH BY q1-q3;
+  VERBAL BY q4-q6;
+  LOGIC BY y1 y2;
+
+  ! --- 2. 結構模型 (路徑預測) ---
+  ! 邏輯表現 被 數學與語文能力 影響 (Y on X)
+  LOGIC ON MATH VERBAL;
+
+OUTPUT: STANDARDIZED;</pre>
+        <button class="btn" onclick="downloadFile('sem_model.inp', 'inpContent', 'msg2')">⬇️ 下載 sem_model.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: SEM 報表解讀 (看路徑係數)</h2>
+        <p>確認 Model Fit (CFI, RMSEA) 及格後，我們直接看最終的假說檢驗。找到 <strong>MODEL RESULTS</strong> 中的 <code>ON</code> 區塊：</p>
+        
+        <pre>
+MODEL RESULTS
+                   <span class="highlight-yellow">Estimate</span>       S.E.  Est./S.E.    <span class="highlight-green">P-Value</span>
+ LOGIC    ON
+    MATH              <span class="highlight-yellow">0.542</span>      0.085      6.376      <span class="highlight-green">0.000</span>
+    VERBAL            <span class="highlight-yellow">0.315</span>      0.092      3.423      <span class="highlight-green">0.001</span>
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <ul>
+                <li><strong>看 P-Value (檢驗假設)：</strong> <span class="highlight-green">兩個 P-Value (0.000 與 0.001) 都小於 0.05</span>。這證明了「數學能力」和「語文能力」真的都能顯著預測「邏輯表現」。</li>
+                <li><strong>看 Estimate (比較影響力)：</strong> 比較兩者的係數斜率。
+                    <ul>
+                        <li>數學對邏輯的影響力為 <span class="highlight-yellow">0.542</span>。</li>
+                        <li>語文對邏輯的影響力為 <span class="highlight-yellow">0.315</span>。</li>
+                        <li><strong>結論：</strong> 雖然兩者都很重要，但在這個模型中，數學能力對邏輯表現的影響力（預測力）比語文能力還要大！</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            const msg = document.getElementById(msgId);
+            msg.style.display = 'inline';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

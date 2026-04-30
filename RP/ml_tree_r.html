@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RP 教學 - 白話機器學習 (決策樹 Decision Tree)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #00796b; border-bottom: 2px solid #00796b; padding-bottom: 10px; }
+        .nav-back { text-decoration: none; color: #00796b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #00796b; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; line-height: 1.5; }
+        .explanation-box { background: #e0f2f1; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #b2dfdb; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; font-weight: bold; }
+        .highlight-red { background-color: #f8d7da; color: #721c24; padding: 2px 4px; border-radius: 3px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回 RP 首頁</a>
+
+    <h1>🌳 機器學習到底在幹嘛？從「決策樹」秒懂</h1>
+    <p><strong>研究實例：預測學生輟學風險 (Dropout)。</strong><br>
+    身為教育心理學家，比起一堆看不懂的參數，您更希望電腦能給出一套「具體的輔導規則」。決策樹會自動幫我們找出「最能區分學生是否輟學的切點」。</p>
+
+    <div class="step-container">
+        <h2>📝 R 語言執行語法 (使用 rpart 套件)</h2>
+        <p>這次我們不用複雜的框架，直接用最經典的 <code>rpart</code> 套件，它會直接畫出一棵樹！</p>
+        <pre>
+# 1. 載入決策樹與繪圖套件
+library(rpart)
+library(rpart.plot)
+
+# 2. 假設我們有一筆學生資料 (df)
+# 變項包含：Absence(缺課天數), QuizScore(小考平均), SES(社經地位)
+# 目標變項：Dropout (是否輟學：Yes / No)
+
+# 3. 讓機器學習「自動尋找規則」
+tree_model <- rpart(
+  Dropout ~ Absence + QuizScore + SES, 
+  data = df, 
+  method = "class" # class 代表我們要分類 (Yes/No)
+)
+
+# 4. 把機器學習的結果「畫成流程圖」
+rpart.plot(tree_model, type = 3, extra = 106)</pre>
+    </div>
+
+    <div class="step-container">
+        <h2>📊 報表解讀 (決策樹流程圖的白話翻譯)</h2>
+        <p>執行畫圖程式碼後，R Studio 會在右下角顯示一張像「倒立樹枝」的流程圖。機器學習告訴我們以下規則：</p>
+        
+        <div class="explanation-box">
+            <h3>💡 機器學習找出的「輔導過濾網」：</h3>
+            <ol>
+                <li><strong>第一關過濾 (最重要的變數)：缺課天數 (Absence)</strong><br>
+                    電腦發現，區分學生會不會輟學，最關鍵的是缺課天數。
+                    <ul>
+                        <li>如果 <code>Absence >= 10天</code> ➡️ 機器預測：<span class="highlight-red">高風險輟學 (Yes)</span>。</li>
+                        <li>如果 <code>Absence < 10天</code> ➡️ 進入下一關評估。</li>
+                    </ul>
+                </li>
+                <br>
+                <li><strong>第二關過濾：小考平均 (QuizScore)</strong><br>
+                    對於缺課少於10天的學生，電腦發現成績是下一個關鍵。
+                    <ul>
+                        <li>如果 <code>QuizScore < 60分</code> ➡️ 機器預測：<span class="highlight-red">輟學 (Yes)</span>。</li>
+                        <li>如果 <code>QuizScore >= 60分</code> ➡️ 機器預測：<span class="highlight-green">安全留下 (No)</span>。</li>
+                    </ul>
+                </li>
+            </ol>
+            <p><strong>🔥 這就是機器學習的魅力：</strong><br>
+            您不用自己去跑迴歸看 p 值，演算法「自動」在幾萬筆資料中，幫您找到了 <strong>10天</strong> 和 <strong>60分</strong> 這兩個最佳切割點！學校主任只要拿著這個規則去篩選名單，就能精準揪出需要輔導的學生，這就是「預測」的價值。</p>
+        </div>
+    </div>
+
+</body>
+</html>

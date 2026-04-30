@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>數據分析與評量科學 - 王光多 (Guang-Duo Wang)</title>
+    <style>
+        :root {
+            --mplus-color: #2c3e50;
+            --rstudio-color: #276cb8;
+            --bg-color: #f4f7f6;
+        }
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: #333; }
+        
+        /* 頂部英雄區 */
+        .hero { background: linear-gradient(135deg, #2c3e50 0%, #276cb8 100%); color: white; padding: 60px 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .hero h1 { margin: 0; font-size: 2.5rem; letter-spacing: 2px; }
+        .hero p { opacity: 0.9; margin-top: 10px; font-size: 1.1rem; }
+
+        /* 作者資訊卡片 */
+        .author-section { max-width: 1000px; margin: -40px auto 40px; background: white; border-radius: 12px; padding: 30px; display: flex; align-items: flex-start; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); gap: 25px; border: 1px solid #e0e0e0; }
+        .avatar { background: #e0f7fa; width: 90px; height: 90px; min-width: 90px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 45px; border: 3px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .author-info { flex-grow: 1; }
+        .author-info h3 { margin: 0 0 12px 0; color: #2c3e50; font-size: 1.6rem; border-bottom: 2px solid #3498db; display: inline-block; padding-bottom: 5px;}
+        .author-info p { margin: 8px 0; color: #444; font-size: 1.05rem; line-height: 1.6; }
+        .author-contact { margin-top: 15px; font-size: 0.95rem; background: #f9f9f9; padding: 10px 15px; border-radius: 8px; display: inline-block; }
+        .author-contact a { color: #276cb8; text-decoration: none; font-weight: bold; }
+        .author-contact a:hover { text-decoration: underline; }
+
+        /* 主容器 */
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        
+        /* 門戶卡片 */
+        .portal-card { background: white; border-radius: 15px; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; border-top: 8px solid #ccc; position: relative; }
+        .portal-card:hover { transform: translateY(-10px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+        .card-content { padding: 35px; flex-grow: 1; }
+        .card-tag { font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-bottom: 12px; display: block; letter-spacing: 1px; }
+        
+        .mplus-theme { border-top-color: var(--mplus-color); }
+        .mplus-theme .card-tag { color: var(--mplus-color); }
+        .rstudio-theme { border-top-color: var(--rstudio-color); }
+        .rstudio-theme .card-tag { color: var(--rstudio-color); }
+
+        .btn-enter { display: block; margin-top: 25px; padding: 15px 25px; border-radius: 30px; text-decoration: none; font-weight: bold; transition: all 0.3s; text-align: center; font-size: 1.1rem; }
+        .mplus-btn { background: var(--mplus-color); color: white; border: 1px solid var(--mplus-color); }
+        .mplus-btn:hover { background: white; color: var(--mplus-color); }
+        .rstudio-btn { background: var(--rstudio-color); color: white; border: 1px solid var(--rstudio-color); }
+        .rstudio-btn:hover { background: white; color: var(--rstudio-color); }
+
+        ul { list-style: none; padding: 0; margin: 20px 0; }
+        li { margin-bottom: 10px; color: #555; display: flex; align-items: center; gap: 10px; font-size: 1rem; }
+        li::before { content: '◈'; color: #3498db; font-weight: bold; }
+
+        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } .author-section { flex-direction: column; align-items: center; text-align: center; margin: -20px 15px 30px; } }
+    </style>
+</head>
+<body>
+
+    <header class="hero">
+        <h1>📊 數據分析與評量科學</h1>
+        <p>探索統計模型、測驗理論與機器學習的數位空間</p>
+    </header>
+
+    <section class="author-section">
+        <div class="avatar">👨‍🎓</div>
+        <div class="author-info">
+            <h3>網頁製作：王光多 (Guang-Duo Wang)</h3>
+            <p><strong>🎓 學歷背景：</strong>國立政治大學 教育心理與輔導組 博士生</p>
+            <p><strong>💡 專業核心：</strong>專精於心理與教育測驗理論（如 <strong>CDM, IRT, SEM</strong>）。本站結合前端開發技術與統計邏輯，讓 Mplus 與 R Studio 的學習路徑變得更直觀、更具實作性。</p>
+            <div class="author-contact">
+                🔗 <a href="https://www.linkedin.com/" target="_blank">LinkedIn 頁面</a> | 
+                ✉️ Email: <a href="mailto:wang.g.duo@hotmail.com">wang.g.duo@hotmail.com</a>
+            </div>
+        </div>
+    </section>
+
+    <main class="container">
+        
+        <div class="portal-card mplus-theme">
+            <div class="card-content">
+                <span class="card-tag">Location: /MplusP/</span>
+                <h2 style="margin: 0; color: var(--mplus-color);">Mplus 統計分析系列</h2>
+                <p>專注於結構方程模型 (SEM) 與潛在類別分析。適合社會科學研究者進行複雜的模型驗證與潛在變項分析。</p>
+                <ul>
+                    <li>多元迴歸與中介效應</li>
+                    <li>驗證性因素分析 (CFA)</li>
+                    <li>多層次模型 (HLM)</li>
+                    <li>潛在類別分析 (LCA)</li>
+                </ul>
+                <a href="MplusP/index.html" class="btn-enter mplus-btn">進入 MplusP 學院 →</a>
+            </div>
+        </div>
+
+        <div class="portal-card rstudio-theme">
+            <div class="card-content">
+                <span class="card-tag">Location: /RP/</span>
+                <h2 style="margin: 0; color: var(--rstudio-color);">R Studio 進階分析系列</h2>
+                <p>利用開源 R 語言強大生態系，實作最前瞻的心理計量模型與預測演算法。</p>
+                <ul>
+                    <li>機器學習 (Machine Learning)</li>
+                    <li>試題反應理論 (IRT / MIRT)</li>
+                    <li>認知診斷模型 (CDM / GDINA)</li>
+                    <li>結構方程式 (SEM / lavaan)</li>
+                </ul>
+                <a href="RP/index.html" class="btn-enter rstudio-btn">進入 RP 實戰演練 →</a>
+            </div>
+        </div>
+
+    </main>
+
+    <footer style="text-align: center; padding: 50px 20px; color: #999; font-size: 0.9rem; line-height: 1.5;">
+        &copy; 2026 王光多 (Guang-Duo Wang). All Rights Reserved.<br>
+        國立政治大學 教育心理與輔導組 博士候選人 研究室製作
+    </footer>
+
+</body>
+</html>

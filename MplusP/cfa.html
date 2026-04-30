@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - 驗證性因素分析 (CFA)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #8e44ad; }
+        .nav-back { text-decoration: none; color: #8e44ad; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #8e44ad; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #8e44ad; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        
+        /* 報表解讀專用樣式 */
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #f4ecf7; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #d7bde2; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
+
+    <h1>🧩 驗證性因素分析 (CFA)</h1>
+    <p><strong>研究目的：</strong>檢驗 6 個問卷題目，是否完美地對應到「數學 (Math)」與「語文 (Verbal)」這兩個潛在變數。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (cfadata.dat)</h2>
+        <pre id="dataContent">4 5 4 2 1 2
+5 5 4 3 2 3
+1 2 1 5 4 5
+2 3 2 4 5 4
+5 4 5 1 2 2</pre>
+        <button class="btn" onclick="downloadFile('cfadata.dat', 'dataContent', 'msg1')">⬇️ 下載 cfadata.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 下載語法檔 (cfa_model.inp)</h2>
+        <pre id="inpContent">TITLE: My CFA Model;
+DATA: FILE IS cfadata.dat;
+VARIABLE: 
+  NAMES ARE q1 q2 q3 q4 q5 q6;
+  USEVARIABLES ARE q1-q6; 
+
+MODEL: 
+  ! 宣告測量模型：BY (由...測量)
+  MATH BY q1 q2 q3;
+  VERBAL BY q4 q5 q6;
+
+OUTPUT: STANDARDIZED;</pre>
+        <button class="btn" onclick="downloadFile('cfa_model.inp', 'inpContent', 'msg2')">⬇️ 下載 cfa_model.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: CFA 報表解讀 (看適配度與係數)</h2>
+        <p>CFA 的報表要看兩個地方：先看模型合不合 (Fit)，再看題目有沒有效 (Results)。</p>
+        
+        <pre>
+MODEL FIT INFORMATION
+CFI/TLI
+    CFI               <span class="highlight-green">0.965</span>
+    TLI               <span class="highlight-green">0.952</span>
+RMSEA (Root Mean Square Error Of Approximation)
+    Estimate          <span class="highlight-green">0.045</span>
+...
+MODEL RESULTS
+                   <span class="highlight-yellow">Estimate</span>       S.E.  Est./S.E.    <span class="highlight-green">P-Value</span>
+ MATH     BY
+    Q1                <span class="highlight-yellow">0.885</span>      0.045     19.667      <span class="highlight-green">0.000</span>
+    Q2                <span class="highlight-yellow">0.820</span>      0.051     16.078      <span class="highlight-green">0.000</span>
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <ul>
+                <li><strong>MODEL FIT (模型適配度)：</strong> 就像是檢查衣服合不合身。
+                    <ul>
+                        <li><span class="highlight-green">CFI / TLI：</span> 大於 0.90 就及格，大於 0.95 就是好棒棒。這裡都是 0.95 以上，過關！</li>
+                        <li><span class="highlight-green">RMSEA：</span> 代表誤差，越小越好。小於 0.08 及格，這裡 0.045 表現極佳。</li>
+                    </ul>
+                </li>
+                <li><strong>MODEL RESULTS (係數與顯著性)：</strong> 
+                    <ul>
+                        <li><span class="highlight-yellow">Estimate (因素負荷量)：</span> Q1 由 MATH 測量出來的標準化係數為 0.885，代表題目高度反映了該變數。</li>
+                        <li><span class="highlight-green">P-Value：</span> 小於 0.05，代表該題目確實能顯著地測量出「數學能力」，你的問卷設計非常成功。</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            const msg = document.getElementById(msgId);
+            msg.style.display = 'inline';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

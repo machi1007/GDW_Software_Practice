@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - 多元迴歸分析</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #1a73e8; }
+        .nav-back { text-decoration: none; color: #1a73e8; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #1a73e8; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #1a73e8; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        
+        /* 報表解讀專用樣式 */
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #e8f0fe; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #cce5ff; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
+
+    <h1>📈 多元迴歸分析 (Multiple Regression)</h1>
+    <p><strong>研究目的：</strong>檢驗「讀書時數 (study_hours)」與「智商 (iq)」是否能顯著正向預測「考試成績 (test_score)」。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (mydata.dat)</h2>
+        <pre id="dataContent">12 105 85
+15 110 92
+8 95 78
+20 115 98
+10 100 80
+5 90 70
+18 108 88
+14 102 83
+22 120 95
+9 98 75</pre>
+        <button class="btn" onclick="downloadFile('mydata.dat', 'dataContent', 'msg1')">⬇️ 下載 mydata.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 下載語法檔 (mymodel.inp)</h2>
+        <pre id="inpContent">TITLE: My Regression;
+DATA: FILE IS mydata.dat;
+VARIABLE: 
+  NAMES ARE study_hours iq test_score;
+  USEVARIABLES ARE study_hours iq test_score;
+MODEL: 
+  ! 考試成績 被 讀書時數 和 智商 影響
+  test_score ON study_hours iq;
+OUTPUT: STANDARDIZED;</pre>
+        <button class="btn" onclick="downloadFile('mymodel.inp', 'inpContent', 'msg2')">⬇️ 下載 mymodel.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！(記得和 dat 放同一資料夾)</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: Mplus 報表解讀教學</h2>
+        <p>在 Mplus 跑完模型後，打開附檔名為 <code>.out</code> 的檔案。往下捲動找到 <strong>MODEL RESULTS</strong> 區塊。你會看到類似下方的數據：</p>
+        
+        <pre>
+MODEL RESULTS
+                   <span class="highlight-yellow">Estimate</span>       S.E.  Est./S.E.    <span class="highlight-green">P-Value</span>
+ TEST_SCORE   ON
+    STUDY_HOURS       <span class="highlight-yellow">1.154</span>      0.245      4.710      <span class="highlight-green">0.000</span>
+    IQ                <span class="highlight-yellow">0.312</span>      0.118      2.644      <span class="highlight-green">0.008</span>
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <ul>
+                <li><strong>Estimate (估計值 / 迴歸係數)：</strong>這就是斜率。
+                    <ul>
+                        <li><code>STUDY_HOURS</code> 為 1.154：表示智商不變的情況下，<strong>每多讀 1 小時，成績預計提升 1.154 分</strong>。</li>
+                        <li><code>IQ</code> 為 0.312：表示讀書時間不變的情況下，智商每高 1 分，成績預計提升 0.312 分。</li>
+                    </ul>
+                </li>
+                <li><strong>P-Value (P值 / 顯著性)：</strong>判斷這個預測能力是不是「巧合」。
+                    <ul>
+                        <li>統計學上，P值小於 0.05 就代表「顯著」（拒絕虛無假設）。</li>
+                        <li>這裡兩個變數的 P-Value (<code>0.000</code> 與 <code>0.008</code>) 都小於 0.05，這意味著：<strong>讀書時數與智商，都能有效且顯著地預測考試成績！</strong></li>
+                    </ul>
+                </li>
+                <li><strong>S.E. (標準誤) 與 Est./S.E. (t值)：</strong>這是用來計算 P值的過程數據。對初學者來說，通常 <code>Est./S.E.</code> 的絕對值大於 1.96 時，P值就會小於 0.05。</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            const msg = document.getElementById(msgId);
+            msg.style.display = 'inline';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

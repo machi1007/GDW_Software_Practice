@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - 多向度試題反應理論 (MIRT)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #673ab7; }
+        .nav-back { text-decoration: none; color: #673ab7; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #673ab7; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #673ab7; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #f3e5f5; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #e1bee7; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
+
+    <h1>🌌 多向度試題反應理論 (MIRT)</h1>
+    <p><strong>研究目的：</strong>結合了 CFA (多向度) 與 IRT (試題鑑別度)。我們要用 6 個是非題，同時測量學生的「數學能力」與「物理能力」，並看這兩種能力是否相關。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (mirtdata.dat)</h2>
+        <p>前3題是數學題，後3題是物理題 (0=錯, 1=對)。</p>
+        <pre id="dataContent">1 1 1 0 1 0
+0 1 0 0 0 0
+1 1 1 1 1 1
+0 0 0 1 0 1
+1 0 1 1 1 0</pre>
+        <button class="btn" onclick="downloadFile('mirtdata.dat', 'dataContent', 'msg1')">⬇️ 下載 mirtdata.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 下載語法檔 (mirt_model.inp)</h2>
+        <p>💡 關鍵技巧：只要將多個潛在變數與 <code>CATEGORICAL ARE</code> 結合，Mplus 就會算出 MIRT。</p>
+        <pre id="inpContent">TITLE: 2-Dimensional IRT Model;
+DATA: FILE IS mirtdata.dat;
+VARIABLE: 
+  NAMES ARE m1-m3 p1-p3;
+  CATEGORICAL ARE m1-m3 p1-p3; ! 宣告為是非題
+
+MODEL:
+  MATH BY m1-m3*; ! 數學維度
+  PHYS BY p1-p3*; ! 物理維度
+  
+  ! 固定潛在特質變異數為 1
+  MATH@1; PHYS@1; 
+  
+  ! 測量數學與物理能力的相關性
+  MATH WITH PHYS; 
+
+OUTPUT: STANDARDIZED;</pre>
+        <button class="btn" onclick="downloadFile('mirt_model.inp', 'inpContent', 'msg2')">⬇️ 下載 mirt_model.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: MIRT 報表解讀</h2>
+        <p>除了能像傳統 IRT 一樣看到每一題的鑑別度與難度，MIRT 最厲害的是能精準計算出多種潛在能力的<strong>共變關係 (WITH)</strong>：</p>
+        
+        <pre>
+MODEL RESULTS
+                   <span class="highlight-yellow">Estimate</span>       S.E.  Est./S.E.    <span class="highlight-green">P-Value</span>
+ MATH     WITH
+    PHYS              <span class="highlight-yellow">0.684</span>      0.092      7.434      <span class="highlight-green">0.000</span>
+
+IRT PARAMETERIZATION
+Item Discriminations (鑑別度 a)
+    M1                1.452      0.125     11.616      0.000
+    P1                1.820      0.150     12.133      0.000
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <ul>
+                <li><strong>WITH (潛在能力相關性)：</strong> 報表顯示 MATH 與 PHYS 的相關係數高達 <span class="highlight-yellow">0.684</span>，且 <span class="highlight-green">P < 0.05</span>。這證明了「數學能力好的人，通常物理能力也很好」。</li>
+                <li><strong>優勢：</strong> 為什麼不直接把成績加總算相關？因為用 MIRT 算出的相關係數是「排除了題目測量誤差」之後的真實相關，比傳統古典測驗理論 (CTT) 算出來的精準非常多！</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            const msg = document.getElementById(msgId); msg.style.display = 'inline'; setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

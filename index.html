@@ -7,13 +7,13 @@
     <style>
         :root {
             --mplus-color: #2c3e50;
-            --rstudio-color: #276cb8;
+            --apa-color: #27ae60;
             --bg-color: #f4f7f6;
         }
         body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; color: #333; }
         
         /* 頂部英雄區 */
-        .hero { background: linear-gradient(135deg, #2c3e50 0%, #276cb8 100%); color: white; padding: 60px 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .hero { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 60px 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .hero h1 { margin: 0; font-size: 2.5rem; letter-spacing: 2px; }
         .hero p { opacity: 0.9; margin-top: 10px; font-size: 1.1rem; }
 
@@ -24,34 +24,61 @@
         .author-info h3 { margin: 0 0 12px 0; color: #2c3e50; font-size: 1.6rem; border-bottom: 2px solid #3498db; display: inline-block; padding-bottom: 5px;}
         .author-info p { margin: 8px 0; color: #444; font-size: 1.05rem; line-height: 1.6; }
         .author-contact { margin-top: 15px; font-size: 0.95rem; background: #f9f9f9; padding: 10px 15px; border-radius: 8px; display: inline-block; }
-        .author-contact a { color: #276cb8; text-decoration: none; font-weight: bold; }
+        .author-contact a { color: #3498db; text-decoration: none; font-weight: bold; }
         .author-contact a:hover { text-decoration: underline; }
 
-        /* 主容器 */
-        .container { max-width: 1000px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        /* 主容器 - 改為單欄設計以容納 10 階藍圖 */
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: 1fr; gap: 30px; }
         
         /* 門戶卡片 */
         .portal-card { background: white; border-radius: 15px; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; display: flex; flex-direction: column; border-top: 8px solid #ccc; position: relative; }
-        .portal-card:hover { transform: translateY(-10px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+        .portal-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
         .card-content { padding: 35px; flex-grow: 1; }
         .card-tag { font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-bottom: 12px; display: block; letter-spacing: 1px; }
         
+        /* 卡片主題色 */
         .mplus-theme { border-top-color: var(--mplus-color); }
         .mplus-theme .card-tag { color: var(--mplus-color); }
-        .rstudio-theme { border-top-color: var(--rstudio-color); }
-        .rstudio-theme .card-tag { color: var(--rstudio-color); }
+        .apa-theme { border-top-color: var(--apa-color); }
+        .apa-theme .card-tag { color: var(--apa-color); }
 
-        .btn-enter { display: block; margin-top: 25px; padding: 15px 25px; border-radius: 30px; text-decoration: none; font-weight: bold; transition: all 0.3s; text-align: center; font-size: 1.1rem; }
-        .mplus-btn { background: var(--mplus-color); color: white; border: 1px solid var(--mplus-color); }
+        /* Mplus 10階藍圖區塊設計 */
+        .roadmap-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 25px;
+            background: #f8fcfd;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px dashed #b2babb;
+        }
+        .roadmap-list { list-style: none; padding: 0; margin: 10px 0 0 0; }
+        .roadmap-list li { margin-bottom: 15px; font-size: 1.05rem; display: flex; align-items: flex-start; gap: 10px; line-height: 1.4; color: #34495e; }
+        .roadmap-list li::before { content: '✔️'; font-size: 0.9rem; margin-top: 2px; }
+        .roadmap-list li.advanced::before { content: '🔥'; }
+        .roadmap-list strong { display: inline-block; min-width: 65px; color: #2980b9;}
+        .roadmap-list li.advanced strong { color: #c0392b; }
+
+        /* 按鈕樣式 */
+        .btn-enter { display: block; padding: 15px 25px; border-radius: 30px; text-decoration: none; font-weight: bold; transition: all 0.3s; text-align: center; font-size: 1.1rem; }
+        .mplus-btn { background: var(--mplus-color); color: white; border: 1px solid var(--mplus-color); max-width: 300px; margin: 30px auto 0; }
         .mplus-btn:hover { background: white; color: var(--mplus-color); }
-        .rstudio-btn { background: var(--rstudio-color); color: white; border: 1px solid var(--rstudio-color); }
-        .rstudio-btn:hover { background: white; color: var(--rstudio-color); }
+        .apa-btn { background: var(--apa-color); color: white; border: 1px solid var(--apa-color); margin-top: 0; }
+        .apa-btn:hover { background: white; color: var(--apa-color); }
 
-        ul { list-style: none; padding: 0; margin: 20px 0; }
-        li { margin-bottom: 10px; color: #555; display: flex; align-items: center; gap: 10px; font-size: 1rem; }
-        li::before { content: '◈'; color: #3498db; font-weight: bold; }
+        /* 資源專屬卡片排版 */
+        .resource-card { flex-direction: row; align-items: center; }
+        .resource-content { flex-grow: 1; padding: 35px; }
+        .resource-action { padding: 35px; border-left: 1px solid #eee; display: flex; align-items: center; justify-content: center; min-width: 200px; }
 
-        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } .author-section { flex-direction: column; align-items: center; text-align: center; margin: -20px 15px 30px; } }
+        /* RWD 響應式設定 */
+        @media (max-width: 768px) { 
+            .author-section { flex-direction: column; align-items: center; text-align: center; margin: -20px 15px 30px; } 
+            .roadmap-grid { grid-template-columns: 1fr; gap: 15px; }
+            .resource-card { flex-direction: column; }
+            .resource-action { border-left: none; border-top: 1px solid #eee; width: 100%; box-sizing: border-box; }
+        }
     </style>
 </head>
 <body>
@@ -66,7 +93,7 @@
         <div class="author-info">
             <h3>網頁製作：王光多 (Guang-Duo Wang)</h3>
             <p><strong>🎓 學歷背景：</strong>國立政治大學 教育心理與輔導組 博士生</p>
-            <p><strong>💡 專業核心：</strong>專精於心理與教育測驗理論（如 <strong>CDM, IRT, SEM</strong>）。本站結合前端開發技術與統計邏輯，讓 Mplus 與 R Studio 的學習路徑變得更直觀、更具實作性。</p>
+            <p><strong>💡 專業核心：</strong>專精於心理與教育測驗理論（如 <strong>CDM, IRT, SEM</strong>）。本站結合前端開發技術與統計邏輯，讓 Mplus 的學習路徑變得更直觀、更具實作性。</p>
             <div class="author-contact">
                 🔗 <a href="https://www.linkedin.com/" target="_blank">LinkedIn 頁面</a> | 
                 ✉️ Email: <a href="mailto:wang.g.duo@hotmail.com">wang.g.duo@hotmail.com</a>
@@ -76,33 +103,54 @@
 
     <main class="container">
         
+        <!-- Mplus 10階藍圖卡片 -->
         <div class="portal-card mplus-theme">
             <div class="card-content">
                 <span class="card-tag">Location: /MplusP/</span>
-                <h2 style="margin: 0; color: var(--mplus-color);">Mplus 統計分析系列</h2>
-                <p>專注於結構方程模型 (SEM) 與潛在類別分析。適合社會科學研究者進行複雜的模型驗證與潛在變項分析。</p>
-                <ul>
-                    <li>多元迴歸與中介效應</li>
-                    <li>驗證性因素分析 (CFA)</li>
-                    <li>多層次模型 (HLM)</li>
-                    <li>潛在類別分析 (LCA)</li>
-                </ul>
+                <h2 style="margin: 0; color: var(--mplus-color);">Mplus 統計分析實戰：10 階學習藍圖</h2>
+                <p style="font-size: 1.05rem; color: #555; line-height: 1.6; margin-top: 10px;">
+                    專注於結構方程模型與潛在變項分析。內容規劃為 <strong>10 個逐漸進階的實作主題</strong>，並將「多層次分析 (HLM)」獨立為高階應用，協助研究者按部就班掌握複雜模型：
+                </p>
+                
+                <div class="roadmap-grid">
+                    <!-- 左側：基礎與核心模型 -->
+                    <div>
+                        <h4 style="color: #2c3e50; margin-top: 0; border-bottom: 2px solid #bdc3c7; padding-bottom: 8px; font-size: 1.15rem;">🔰 基礎與核心模型 (Level 1-5)</h4>
+                        <ul class="roadmap-list">
+                            <li><strong>Level 1:</strong> 基礎迴歸、中介與調節效應分析</li>
+                            <li><strong>Level 2:</strong> 探索性與驗證性因素分析 (EFA / CFA)</li>
+                            <li><strong>Level 3:</strong> 結構方程模型完整實作 (SEM)</li>
+                            <li><strong>Level 4:</strong> 多群組分析與測量不變性 (Invariance)</li>
+                            <li><strong>Level 5:</strong> 潛在類別與潛在剖面分析 (LCA / LPA)</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 右側：高階與多層次分析 -->
+                    <div>
+                        <h4 style="color: #c0392b; margin-top: 0; border-bottom: 2px solid #e6b0aa; padding-bottom: 8px; font-size: 1.15rem;">🚀 高階與多層次分析 (Level 6-10)</h4>
+                        <ul class="roadmap-list">
+                            <li><strong>Level 6:</strong> 縱貫性成長曲線模型 (LGM)</li>
+                            <li><strong>Level 7:</strong> 潛在轉換分析 (LTA)</li>
+                            <li class="advanced"><strong>Level 8:</strong> 基礎多層次線性模型 (HLM / MLM)</li>
+                            <li class="advanced"><strong>Level 9:</strong> 多層次結構方程模型 (MSEM)</li>
+                            <li class="advanced"><strong>Level 10:</strong> 多層次潛在類別與動態模型 (DSEM)</li>
+                        </ul>
+                    </div>
+                </div>
+
                 <a href="MplusP/index.html" class="btn-enter mplus-btn">進入 MplusP 學院 →</a>
             </div>
         </div>
 
-        <div class="portal-card rstudio-theme">
-            <div class="card-content">
-                <span class="card-tag">Location: /RP/</span>
-                <h2 style="margin: 0; color: var(--rstudio-color);">R Studio 進階分析系列</h2>
-                <p>利用開源 R 語言強大生態系，實作最前瞻的心理計量模型與預測演算法。</p>
-                <ul>
-                    <li>機器學習 (Machine Learning)</li>
-                    <li>試題反應理論 (IRT / MIRT)</li>
-                    <li>認知診斷模型 (CDM / GDINA)</li>
-                    <li>結構方程式 (SEM / lavaan)</li>
-                </ul>
-                <a href="RP/index.html" class="btn-enter rstudio-btn">進入 RP 實戰演練 →</a>
+        <!-- 保持原始提供的 APA 連結與結構 -->
+        <div class="portal-card apa-theme resource-card">
+            <div class="resource-content">
+                <span class="card-tag">Writing Resource</span>
+                <h2 style="margin: 0; color: var(--apa-color);">📝 APA 第七版學術寫作百科全書</h2>
+                <p>專為學位論文與期刊投稿設計的<strong>線上互動指南</strong>。支援<strong>關鍵字即時搜尋</strong>與<strong>一鍵完美複製（保留斜/粗體格式）</strong>，收錄中英全冊對照與高階統計軟體引用規範。</p>
+            </div>
+            <div class="resource-action">
+                <a href="APA/apa.html" target="_blank" class="btn-enter apa-btn" style="margin-top: 0;">💻 進入線上百科全書</a>
             </div>
         </div>
 
@@ -110,7 +158,7 @@
 
     <footer style="text-align: center; padding: 50px 20px; color: #999; font-size: 0.9rem; line-height: 1.5;">
         &copy; 2026 王光多 (Guang-Duo Wang). All Rights Reserved.<br>
-        國立政治大學 教育心理與輔導組 博士候選人 研究室製作
+        國立政治大學 教育心理與輔導組 博士生 製作
     </footer>
 
 </body>

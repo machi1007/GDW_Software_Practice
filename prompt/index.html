@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus AI Ultimate MAX 終極終端機</title>
+    <style>
+        :root {
+            --bg-grad-1: #0f2027;
+            --bg-grad-2: #203a43;
+            --bg-grad-3: #2c5364;
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --accent: #f093fb;
+            --surface: rgba(255, 255, 255, 0.95);
+            --text-dark: #1e293b;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; }
+        body { margin: 0; padding: 0; background: linear-gradient(135deg, var(--bg-grad-1), var(--bg-grad-2), var(--bg-grad-3)); background-attachment: fixed; color: var(--text-dark); min-height: 100vh; }
+
+        /* 頂部導覽列 (毛玻璃) */
+        .navbar { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.2); padding: 20px; text-align: center; color: white; position: relative; }
+        .navbar h1 { margin: 0; font-size: 2.2rem; background: -webkit-linear-gradient(right, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900;}
+        .nav-back { position: absolute; left: 20px; top: 25px; color: white; text-decoration: none; font-weight: bold; border: 1px solid rgba(255,255,255,0.4); padding: 5px 15px; border-radius: 20px; transition: 0.3s;}
+        .nav-back:hover { background: rgba(255,255,255,0.2); }
+
+        .container { max-width: 1050px; margin: 40px auto; padding: 0 20px; }
+
+        /* 三引擎頁籤 */
+        .tabs { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap;}
+        .tab-btn { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(5px); padding: 15px 25px; font-size: 1.1rem; font-weight: bold; border-radius: 12px; cursor: pointer; transition: all 0.3s; }
+        .tab-btn.active { background: linear-gradient(135deg, var(--secondary), var(--primary)); color: white; border: none; box-shadow: 0 5px 20px rgba(79, 172, 254, 0.4); transform: translateY(-3px); }
+        .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.3); }
+
+        /* 主卡片區 (Glassmorphism) */
+        .engine-card { background: var(--surface); border-radius: 20px; padding: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); display: none; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); border-top: 6px solid var(--secondary);}
+        .engine-card.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 檔案拖曳區 (Dropzone) */
+        .dropzone { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 30px; text-align: center; background: #f8fafc; cursor: pointer; transition: all 0.3s; margin-bottom: 20px; }
+        .dropzone.dragover { border-color: var(--secondary); background: #e0f2fe; transform: scale(1.02); }
+        .dropzone p { margin: 0; color: #64748b; font-size: 1.1rem; font-weight: bold; }
+        .dropzone span { font-size: 0.9rem; color: #94a3b8; }
+        
+        /* 表單元素 */
+        .form-group { margin-bottom: 25px; }
+        .form-group label { display: block; font-weight: 800; margin-bottom: 10px; color: #334155; font-size: 1.1rem;}
+        select, input[type="text"] { width: 100%; padding: 15px; border-radius: 10px; border: 2px solid #e2e8f0; font-size: 1rem; transition: 0.3s; background: #f8fafc; font-weight: bold; color: #1e293b;}
+        select:focus, textarea:focus { outline: none; border-color: var(--secondary); box-shadow: 0 0 0 4px rgba(79, 172, 254, 0.2); background: white;}
+        textarea { width: 100%; height: 200px; padding: 15px; border-radius: 10px; border: 2px solid #e2e8f0; font-family: 'Consolas', monospace; font-size: 0.95rem; background: #f1f5f9; resize: vertical; line-height: 1.6;}
+
+        /* 晶片標籤 (Chips) */
+        .chip-group { display: flex; flex-wrap: wrap; gap: 12px; }
+        .chip-label { cursor: pointer; }
+        .chip-label input { display: none; }
+        .chip-text { display: inline-block; padding: 12px 20px; background: white; border: 2px solid #e2e8f0; border-radius: 25px; font-size: 0.95rem; color: #64748b; transition: all 0.2s; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        .chip-label input:checked + .chip-text { background: #eff6ff; border-color: var(--secondary); color: var(--secondary); box-shadow: 0 4px 10px rgba(79, 172, 254, 0.15);}
+
+        /* 終極生成按鈕 */
+        .btn-magic { width: 100%; background: linear-gradient(135deg, var(--secondary), var(--primary)); color: white; border: none; padding: 20px; font-size: 1.3rem; font-weight: 900; border-radius: 15px; cursor: pointer; transition: all 0.3s; margin-top: 15px; box-shadow: 0 10px 25px rgba(79, 172, 254, 0.4); text-transform: uppercase; letter-spacing: 2px; }
+        .btn-magic:hover { transform: translateY(-4px); box-shadow: 0 15px 35px rgba(79, 172, 254, 0.6); filter: brightness(1.1);}
+
+        /* 指令預覽終端機 (Modal) */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 999; }
+        .modal-content { background: #1e1e1e; width: 90%; max-width: 800px; border-radius: 15px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.5); border: 1px solid #333; animation: scaleIn 0.3s ease; }
+        .modal-header { background: #2d2d2d; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444;}
+        .modal-header h3 { margin: 0; color: var(--primary); font-family: monospace; font-size: 1.2rem;}
+        .close-btn { background: #ff5f56; border: none; width: 15px; height: 15px; border-radius: 50%; cursor: pointer; }
+        .modal-body textarea { background: transparent; color: #a6accd; border: none; height: 400px; font-size: 1rem; box-shadow: none; padding: 20px; }
+        .modal-footer { background: #2d2d2d; padding: 15px; text-align: right; border-top: 1px solid #444;}
+        .btn-copy { background: var(--accent); color: white; font-weight: bold; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-size: 1.1rem; transition: 0.2s;}
+        .btn-copy:hover { background: #e074eb; transform: scale(1.05); }
+
+        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="nav-back">← 回首頁</a>
+        <h1>Mplus AI Ultimate MAX</h1>
+        <p style="margin: 5px 0 0; font-size: 1.1rem; color: #e2e8f0;">讀取報表 × 生成語法 × 學術防禦</p>
+    </nav>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('reader')">📊 引擎一：報表解析器</button>
+            <button class="tab-btn" onclick="switchTab('writer')">💻 引擎二：語法建構器</button>
+            <button class="tab-btn" style="border-color: var(--accent);" onclick="switchTab('defender')">🛡️ 引擎三：學術防禦/顧問</button>
+        </div>
+
+        <div id="reader-card" class="engine-card active">
+            <div class="form-group">
+                <label>📌 1. 分析模型與學術層級設定</label>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <select id="r-modelType" style="flex: 2;">
+                        <option value="一般迴歸/路徑分析 (Path)">一般路徑分析 (Path)</option>
+                        <option value="結構方程/驗證因素 (SEM/CFA)">SEM / CFA</option>
+                        <option value="多層次模型 (HLM)">多層次模型 (HLM/MSEM)</option>
+                        <option value="進階潛在變項 (LCA/DSEM)">LCA / DSEM / IRT</option>
+                        <option value="我不確定">我不確定，請 AI 判斷</option>
+                    </select>
+                    <select id="r-level" style="flex: 1; background: #fffbeb; color: #b45309;">
+                        <option value="碩士論文口試等級">🎓 碩士白話版</option>
+                        <option value="SSCI 頂尖期刊等級">🏆 SSCI 專業版</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>📂 2. 匯入 Mplus 報表 (.out 檔拖曳或貼上)</label>
+                <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+                    <p>📥 點擊或將 .out 檔案拖曳至此處</p>
+                    <span>系統將自動讀取內容，不需上傳伺服器</span>
+                    <input type="file" id="fileInput" accept=".out,.txt" style="display: none;" onchange="handleFileSelect(event)">
+                </div>
+                <textarea id="r-output" placeholder="...或直接貼上 Mplus 的 MODEL RESULTS 區塊"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>🎯 3. 指定 AI 輸出重點 (可複選)</label>
+                <div class="chip-group">
+                    <label class="chip-label"><input type="checkbox" id="ro-1" checked><span class="chip-text">✅ 白話文精要總結</span></label>
+                    <label class="chip-label"><input type="checkbox" id="ro-2" checked><span class="chip-text">📊 APA 7th 格式表格</span></label>
+                    <label class="chip-label"><input type="checkbox" id="ro-3"><span class="chip-text">⚠️ 挑出不顯著路徑</span></label>
+                    <label class="chip-label"><input type="checkbox" id="ro-4"><span class="chip-text">🔍 適配度 (Model Fit) 檢查</span></label>
+                    <label class="chip-label"><input type="checkbox" id="ro-5"><span class="chip-text">🛠️ WARNING/ERROR 除錯</span></label>
+                </div>
+            </div>
+
+            <button class="btn-magic" onclick="previewPrompt('reader')">🚀 產生終極解析指令</button>
+        </div>
+
+        <div id="writer-card" class="engine-card">
+            <div class="form-group">
+                <label>📌 1. 選擇要建構的 Mplus 模型</label>
+                <select id="w-modelType">
+                    <option value="中介/調節效應 (Mediation/Moderation)">中介/調節效應 (Mediation)</option>
+                    <option value="結構方程模型 (SEM)">結構方程模型 (SEM)</option>
+                    <option value="雙層次模型 (HLM)">雙層次模型 (HLM 1-1-1 / MSEM)</option>
+                    <option value="潛在類別分析 (LCA)">潛在類別分析 (LCA)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>📝 2. 用白話文描述變數與假設</label>
+                <textarea id="w-vars" placeholder="例如：
+變數有 SES (自變數), MOTIV (中介變數), MATH (依變數)。
+我想跑一個多層次模型 (TWOLEVEL)，班級是 class_id。
+請幫我寫出完整的語法，我要看 SES 對 MATH 的間接效應。"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>⚙️ 3. 語法參數掛載 (可複選)</label>
+                <div class="chip-group">
+                    <label class="chip-label"><input type="checkbox" id="wo-1" checked><span class="chip-text">📉 輸出標準化解 (STANDARDIZED)</span></label>
+                    <label class="chip-label"><input type="checkbox" id="wo-2" checked><span class="chip-text">❓ 處理遺漏值 (MISSING ARE ALL)</span></label>
+                    <label class="chip-label"><input type="checkbox" id="wo-3"><span class="chip-text">🔄 Bootstrap 拔靴法 1000次</span></label>
+                    <label class="chip-label"><input type="checkbox" id="wo-4"><span class="chip-text">📈 MODEL INDIRECT (間接效應)</span></label>
+                </div>
+            </div>
+
+            <button class="btn-magic" onclick="previewPrompt('writer')">🚀 產生語法建構指令</button>
+        </div>
+
+        <div id="defender-card" class="engine-card">
+            <div class="form-group">
+                <label>🛡️ 1. 遇到什麼學術困難？</label>
+                <select id="d-scenario">
+                    <option value="回覆期刊審查委員的嚴厲批評 (Reviewer Comments)">🚨 回覆審查委員的嚴厲批評</option>
+                    <option value="不知如何選擇正確的統計模型">🤔 不知道該用什麼統計模型</option>
+                    <option value="解釋統計模型的基本假設與理論">📚 需補充統計理論與假設文獻</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>💬 2. 貼上 Reviewer 的問題或你的困惑</label>
+                <textarea id="d-issue" placeholder="例如：
+Reviewer 2 說：為什麼你的資料具有嵌套性 (Nested data)，卻只跑傳統的 SEM，而不用多層次模型 (HLM)？這可能會低估標準誤！
+請幫我寫一段委婉但專業的回覆，告訴他因為 ICC 非常小，所以一般 SEM 也可以接受。"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>🎭 3. AI 回覆風格設定</label>
+                <div class="chip-group">
+                    <label class="chip-label"><input type="radio" name="tone" value="委婉防禦並附上引用文獻" checked><span class="chip-text">🛡️ 委婉防禦 (附文獻支持)</span></label>
+                    <label class="chip-label"><input type="radio" name="tone" value="承認限制並承諾未來研究改進"><span class="chip-text">🏳️ 承認限制 (安全下莊)</span></label>
+                    <label class="chip-label"><input type="radio" name="tone" value="一步一步教學引導模式"><span class="chip-text">👩‍🏫 顧問教學模式 (幫我釐清)</span></label>
+                </div>
+            </div>
+
+            <button class="btn-magic" style="background: linear-gradient(135deg, var(--accent), #ff758c);" onclick="previewPrompt('defender')">🚀 產生終極防禦指令</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="previewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>> root@mplus-ai-max:~$ Prompt_Preview</h3>
+                <button class="close-btn" onclick="closeModal()"></button>
+            </div>
+            <div class="modal-body">
+                <textarea id="finalPromptText" spellcheck="false"></textarea>
+            </div>
+            <div class="modal-footer">
+                <span style="color: #666; font-size: 0.9rem; margin-right: 15px;">可在上方編輯器手動微調再複製</span>
+                <button class="btn-copy" onclick="copyToClipboard()">📋 複製指令並關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 頁籤切換
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.engine-card').forEach(card => card.classList.remove('active'));
+            
+            if (tabName === 'reader') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('reader-card').classList.add('active');
+            } else if (tabName === 'writer') {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('writer-card').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[2].classList.add('active');
+                document.getElementById('defender-card').classList.add('active');
+            }
+        }
+
+        // 拖曳上傳檔案處理
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const outputArea = document.getElementById('r-output');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, preventDefaults, false);
+        });
+        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => dropzone.classList.add('dragover'), false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, () => dropzone.classList.remove('dragover'), false);
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            let dt = e.dataTransfer;
+            let files = dt.files;
+            handleFiles(files);
+        });
+
+        function handleFileSelect(e) { handleFiles(e.target.files); }
+
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            const file = files[0];
+            // 檢查是否為純文本類型或常見 Mplus 附檔名
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                outputArea.value = e.target.result;
+                outputArea.style.borderColor = "var(--accent)";
+                setTimeout(()=> outputArea.style.borderColor = "#e2e8f0", 1000);
+            };
+            reader.readAsText(file);
+        }
+
+        // 產生指令與 Modal 處理
+        function previewPrompt(engine) {
+            let prompt = "";
+
+            if (engine === 'reader') {
+                const output = document.getElementById('r-output').value.trim();
+                if (!output) { alert("⚠️ 報表內容不能為空！請拖曳檔案或貼上。"); return; }
+                const model = document.getElementById('r-modelType').value;
+                const level = document.getElementById('r-level').value;
+                let reqs = [];
+                if (document.getElementById('ro-1').checked) reqs.push("- 【白話總結】：用最精煉的中文總結核心發現。");
+                if (document.getElementById('ro-2').checked) reqs.push("- 【APA 表格】：輸出符合 APA 7th 的統計表格與表註。");
+                if (document.getElementById('ro-3').checked) reqs.push("- 【顯著性檢查】：條列出不顯著 (p > 0.05) 的路徑。");
+                if (document.getElementById('ro-4').checked) reqs.push("- 【適配度】：評估 CFI, TLI, RMSEA 等 Model Fit。");
+                if (document.getElementById('ro-5').checked) reqs.push("- 【除錯】：解決報表中的 WARNING 或 ERROR。");
+                
+                prompt = `你是頂尖統計教授。我正進行【${model}】分析。請以【${level}】口吻解讀以下 Mplus 報表：\n\n要求：\n${reqs.join('\n')}\n\n[Mplus Output 開始]\n${output}\n[Mplus Output 結束]\n\n請開始解析：`;
+            
+            } else if (engine === 'writer') {
+                const vars = document.getElementById('w-vars').value.trim();
+                if (!vars) { alert("⚠️ 請描述變數設定！"); return; }
+                const model = document.getElementById('w-modelType').value;
+                let settings = [];
+                if (document.getElementById('wo-1').checked) settings.push("- 包含 STANDARDIZED");
+                if (document.getElementById('wo-2').checked) settings.push("- 宣告遺漏值 MISSING ARE ALL (-99)");
+                if (document.getElementById('wo-3').checked) settings.push("- 使用 BOOTSTRAP = 1000");
+                if (document.getElementById('wo-4').checked) settings.push("- 估計 MODEL INDIRECT 間接效應");
+
+                prompt = `你是 Mplus 語法工程師。我需要寫【${model}】的 Syntax。\n\n變數設定與目標：\n${vars}\n\n技術要求：\n${settings.join('\n')}\n\n請給我：\n1. 完整可執行的 .inp 語法（加上中文註解）\n2. 語法結構解釋\n3. 資料檔 (.dat) 格式提醒。`;
+            
+            } else if (engine === 'defender') {
+                const scenario = document.getElementById('d-scenario').value;
+                const issue = document.getElementById('d-issue').value.trim();
+                if (!issue) { alert("⚠️ 請輸入您遇到的問題或審查意見！"); return; }
+                const tone = document.querySelector('input[name="tone"]:checked').value;
+
+                prompt = `你是學術審查防禦專家與高階統計顧問。我面臨以下學術情境：【${scenario}】\n\n問題描述 / 審查意見：\n"""\n${issue}\n"""\n\n請以【${tone}】的風格幫助我。如果這是一個 Reviewer 回覆，請給我一段專業的英文/中文回覆信草稿，並視情況編造合適的虛擬統計學術引用 (例如 Muthén, 1999) 讓我去查找。如果是諮詢，請給我條理分明的建議。`;
+            }
+
+            document.getElementById('finalPromptText').value = prompt;
+            document.getElementById('previewModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('previewModal').style.display = 'none';
+        }
+
+        function copyToClipboard() {
+            const copyText = document.getElementById('finalPromptText');
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); // 手機相容性
+            navigator.clipboard.writeText(copyText.value).then(() => {
+                const btn = document.querySelector('.btn-copy');
+                const originalText = btn.innerText;
+                btn.innerText = "✅ 複製成功！";
+                btn.style.background = "#00e676";
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.background = "var(--accent)";
+                    closeModal();
+                }, 1500);
+            });
+        }
+    </script>
+</body>
+</html>

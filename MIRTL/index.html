@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心理計量學打怪手冊：V5.0 究極完整版</title>
+    
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg: #020617;
+            --card: #1e293b;
+            --primary: #3b82f6;
+            --green: #22c55e;
+            --yellow: #eab308;
+            --orange: #f97316;
+            --red: #ef4444;
+            --purple: #a855f7;
+            --cyan: #06b6d4;
+            --pink: #ec4899;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.6; padding: 20px; }
+
+        header { text-align: center; padding: 40px 20px; background: linear-gradient(to bottom, #0f172a, var(--bg)); border-radius: 15px; margin-bottom: 30px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { font-size: 2.5em; text-shadow: 0 0 15px rgba(59, 130, 246, 0.4); margin-bottom: 10px; }
+        .version { background: linear-gradient(45deg, var(--pink), var(--purple)); color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.7em; vertical-align: super; font-weight: bold;}
+
+        nav { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; position: sticky; top: 10px; z-index: 100; }
+        .tab-btn { background: var(--card); color: var(--text); border: 1px solid #334155; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+        .tab-btn:hover { background: #334155; }
+        .tab-btn.active { border-bottom: 4px solid var(--primary); transform: translateY(-2px); background: #0f172a; box-shadow: 0 5px 15px rgba(0,0,0,0.5);}
+
+        .content-section { display: none; animation: slideIn 0.4s ease-out; }
+        .content-section.active { display: block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: var(--card); border-radius: 12px; padding: 30px; margin-bottom: 25px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); }
+        .level-tag { font-family: monospace; padding: 4px 10px; border-radius: 4px; font-size: 0.9em; margin-bottom: 15px; display: inline-block; font-weight: bold; }
+        
+        .setting-box { background: rgba(0,0,0,0.4); border-left: 4px solid var(--primary); padding: 15px; border-radius: 4px; margin: 20px 0; color: #6ee7b7; font-family: 'Courier New', Courier, monospace; }
+        .phd-box { background: rgba(236, 72, 153, 0.1); border-left: 4px solid var(--pink); padding: 15px; border-radius: 4px; margin: 20px 0; color: #fbcfe8; font-family: 'Courier New', Courier, monospace; }
+
+        .formula-card { background: #0b1120; padding: 20px; border-radius: 10px; margin: 20px 0; border: 1px dashed #475569; text-align: center; font-size: 1.15em; color: #fff; overflow-x: auto; }
+        .param-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-top: 15px; }
+        .param-item { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 6px; border-left: 3px solid #3b82f6; }
+        .param-item b { color: #93c5fd; font-size: 1.1em;}
+        .highlight { color: var(--yellow); font-weight: bold; }
+        .phd-param b { color: #f9a8d4; }
+
+        .challenge-container { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .challenge-card { background: rgba(239, 68, 68, 0.05); border: 1px solid #7f1d1d; border-radius: 8px; padding: 15px; }
+        .challenge-title { color: #fca5a5; font-weight: bold; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .solution-box { background: rgba(34, 197, 94, 0.05); border-left: 3px solid var(--green); padding: 10px; margin-top: 10px; font-size: 0.95em; }
+        .solution-title { color: #86efac; font-weight: bold; margin-bottom: 5px; }
+
+        hr { border: 0; border-top: 1px solid #334155; margin: 40px 0; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🎮 心理計量學打怪手冊 <span class="version">V5.0 究極版</span></h1>
+        <p>「這不是考試，這是一場關於潛在特質的生存遊戲。」</p>
+    </header>
+
+    <nav id="mainNav">
+        <button class="tab-btn active" data-target="lv1">🟢 Lv1: IRT 家族</button>
+        <button class="tab-btn" data-target="lv2">🟡 Lv2: MIRT 戰鬥</button>
+        <button class="tab-btn" data-target="lv25">🟣 Lv2.5: Reckase 密室</button>
+        <button class="tab-btn" data-target="lv3">🔴 Lv3: 認知 CDM</button>
+        <button class="tab-btn" style="border-color: var(--pink);" data-target="lv4">🎓 MAX: 情意 CDM 與防禦</button>
+    </nav>
+
+    <main id="lv1" class="content-section active">
+        <div class="card" style="border-top: 4px solid var(--green);">
+            <span class="level-tag" style="background: var(--green); color: #000;">NOVICE TO VETERAN</span>
+            <h2>單維度基礎戰力 (IRT 家族進化史)</h2>
+            <div class="setting-box">> 任務描述：在單一屬性的森林裡，怪物的機制隨著難度不斷進化，加入了運氣、失誤與非對稱護盾機制。</div>
+            
+            <h3>📌 2PL 模型：經典雙屬性怪物</h3>
+            <p>怪物擁有最基礎的「防禦力」與「靈敏度」。</p>
+            <div class="formula-card">
+                $$P(\theta_n) = \frac{1}{1 + \exp(-a_i(\theta_n - b_i))}$$
+            </div>
+            <div class="param-list">
+                <div class="param-item"><b>$\theta_n$</b>: 你的綜合戰鬥力</div>
+                <div class="param-item"><b>$b_i$</b>: 怪物防禦力（難度）</div>
+                <div class="param-item"><b>$a_i$</b>: 怪物靈敏度（鑑別度）</div>
+            </div>
+
+            <hr>
+
+            <h3>📌 3PL 模型：加入「賽中/保底勝率」機制</h3>
+            <p>怪物自帶 <span class="highlight">「瞎猜漏洞」</span>。就算你戰力是負的，瞎揮一通也有基礎機率爆擊打贏。</p>
+            <div class="formula-card">
+                $$P(\theta_n) = c_i + (1 - c_i) \frac{1}{1 + \exp(-a_i(\theta_n - b_i))}$$
+            </div>
+            <div class="param-list">
+                <div class="param-item"><b>$c_i$ (Guessing)</b>: 瞎猜率。曲線下限提升至 $c_i$。</div>
+            </div>
+
+            <hr>
+
+            <h3>📌 4PL 模型：加入「手殘/疲勞」機制</h3>
+            <p>遊戲加入了 <span class="highlight">「最高勝率上限」</span>。因為粗心或手殘，勝率永遠無法達到 100%。</p>
+            <div class="formula-card">
+                $$P(\theta_n) = c_i + (u_i - c_i) \frac{1}{1 + \exp(-a_i(\theta_n - b_i))}$$
+            </div>
+            <div class="param-list">
+                <div class="param-item"><b>$u_i$ (Upper Asymptote)</b>: 最高勝率上限。曲線上限被壓低至 $u_i$。</div>
+            </div>
+
+            <hr>
+
+            <h3>📌 5PL 模型：非對稱護盾變形</h3>
+            <p>怪物的勝率曲線不再是對稱的 S 型，需要一個 <span class="highlight">「非對稱參數」</span> 來扭曲空間。</p>
+            <div class="formula-card">
+                $$P(\theta_n) = c_i + (u_i - c_i) \left[ \frac{1}{1 + \exp(-a_i(\theta_n - b_i))} \right]^{v_i}$$
+            </div>
+            <div class="param-list">
+                <div class="param-item"><b>$v_i$ (Asymmetry)</b>: 非對稱參數。當 $v_i \neq 1$ 時，S型曲線上下半部彎曲程度不同。</div>
+            </div>
+        </div>
+    </main>
+
+    <main id="lv2" class="content-section">
+        <div class="card" style="border-top: 4px solid var(--yellow);">
+            <span class="level-tag" style="background: var(--yellow); color: #000;">ADVANCED</span>
+            <h2>多維度屬性戰鬥 (MIRT & MRCMLM)</h2>
+            <div class="setting-box">> 任務描述：怪物擁有多重弱點，你可以用力量強攻，也可以用智力巧取。</div>
+
+            <h3>📌 Mark D. Reckase 模型 (M2PL)</h3>
+            <div class="formula-card">
+                $$P(\boldsymbol{\theta}_n) = \frac{\exp(\mathbf{a}_i' \boldsymbol{\theta}_n + d_i)}{1 + \exp(\mathbf{a}_i' \boldsymbol{\theta}_n + d_i)}$$
+            </div>
+            <div class="param-list">
+                <div class="param-item"><b>$\mathbf{a}_i'$</b>: 怪物對各向度的「弱點向量」</div>
+                <div class="param-item"><b>$d_i$</b>: 怪物截距（與整體容易度有關）</div>
+            </div>
+
+            <hr>
+
+            <h3>📌 Adams 等人的 MRCMLM 模型</h3>
+            <p>嚴格計分型模型，用於部分給分的複雜題目。</p>
+            <div class="formula-card">
+                $$P(X_{ni}=j | \boldsymbol{\theta}_n) = \frac{\exp(\mathbf{b}_{ij}' \boldsymbol{\theta}_n + \mathbf{a}_{ij}' \boldsymbol{\xi})}{\sum_{k=1}^{K_i} \exp(\mathbf{b}_{ik}' \boldsymbol{\theta}_n + \mathbf{a}_{ik}' \boldsymbol{\xi})}$$
+            </div>
+            <div class="param-list">
+                <div class="param-item"><b>$\mathbf{b}_{ij}$</b>: 計分矩陣（開發者規定這題考什麼能力）</div>
+                <div class="param-item"><b>$\boldsymbol{\xi}$</b>: 怪物難度參數</div>
+            </div>
+        </div>
+    </main>
+
+    <main id="lv25" class="content-section">
+        <div class="card" style="border-top: 4px solid var(--purple);">
+            <span class="level-tag" style="background: var(--purple); color: #fff;">ELITE SECRETS</span>
+            <h2>Reckase 密室：書中難解公式拆解</h2>
+            <div class="setting-box">> 任務描述：解析 Reckase 書中最讓人頭痛的幾何參數。</div>
+
+            <h3>🛡️ 機制一：互補性 vs 非互補性</h3>
+            <ul>
+                <li><strong>互補性 (Compensatory)：</strong> 只要一個屬性高到爆，就能補足另一個。公式特徵是能力項 <b>相加</b> ($\mathbf{a}_i' \boldsymbol{\theta}$)。</li>
+                <li><strong>非互補性 (Non-Compensatory)：</strong> 每項能力都必須過關。公式特徵是 <b>相乘</b> ($\prod P_k$)。</li>
+            </ul>
+
+            <hr>
+
+            <h3>⚔️ 機制二：怪物絕對指標 (MDISC, MDIFF, Angles)</h3>
+            
+            <div class="formula-card">
+                <p>多維度鑑別度 (MDISC)：</p>
+                $$MDISC_i = \sqrt{\sum_{k=1}^m a_{ik}^2}$$
+                <p style="font-size: 0.8em; color: var(--muted); margin-top: 10px;">解讀：怪物總體的挑人能力，利用畢氏定理算出最陡峭的總坡度。</p>
+            </div>
+
+            <div class="formula-card">
+                <p>多維度難度 (MDIFF)：</p>
+                $$MDIFF_i = \frac{-d_i}{MDISC_i}$$
+                <p style="font-size: 0.8em; color: var(--muted); margin-top: 10px;">解讀：怪物在多維空間中距離原點的絕對直線距離，數值越大代表越難。</p>
+            </div>
+
+            <div class="formula-card">
+                <p>方向餘弦 (Angles/Directions)：</p>
+                $$\cos \alpha_{ik} = \frac{a_{ik}}{MDISC_i}$$
+                <p style="font-size: 0.8em; color: var(--muted); margin-top: 10px;">解讀：這隻怪物偏向哪種能力？算出它偏向哪一個能力軸。</p>
+            </div>
+        </div>
+    </main>
+
+    <main id="lv3" class="content-section">
+        <div class="card" style="border-top: 4px solid var(--red);">
+            <span class="level-tag" style="background: var(--red); color: #fff;">BOSS FIGHT</span>
+            <h2>技能樹解鎖診斷 (傳統認知 CDM)</h2>
+            <div class="setting-box">> 任務描述：不再看分數，而是看你「解鎖了哪些技能招式(0或1)」。</div>
+
+            <h3>📌 DINA 模型 (AND 邏輯)</h3>
+            <div class="formula-card">
+                $$P(X_{ni}=1 | \boldsymbol{\alpha}_n) = (1-s_i)^{\eta_{ni}} g_i^{1-\eta_{ni}}$$
+                <p style="font-size: 0.7em;">技能判定：$\eta_{ni} = \prod \alpha_{nk}^{q_{ik}}$</p>
+            </div>
+            <div class="param-list">
+                <div class="param-item"><b>$\boldsymbol{\alpha}_n$</b>: 考生的技能向量</div>
+                <div class="param-item"><b>$s_i$ (Slip)</b>: 手殘失誤率</div>
+                <div class="param-item"><b>$g_i$ (Guess)</b>: 瞎猜率</div>
+            </div>
+
+            <hr>
+
+            <h3>📌 GDINA 模型 (綜合 Combo)</h3>
+            <div class="formula-card">
+                $$P(X_{ni}=1 | \boldsymbol{\alpha}_{nl}^*) = \delta_{i0} + \sum \delta_{ik} \alpha_{nlk} + \sum \delta_{ikk'} \alpha_{nlk} \alpha_{nlk'} \dots$$
+            </div>
+            <div class="param-list">
+                <div class="param-item"><b>$\delta_{i0}$</b>: 裸考勝率</div>
+                <div class="param-item"><b>$\delta_{ik}$</b>: 習得單一技能的戰力提升</div>
+                <div class="param-item"><b>$\delta_{ikk'}$</b>: 技能組合出的額外 Combo 傷害</div>
+            </div>
+        </div>
+    </main>
+
+    <main id="lv4" class="content-section">
+        <div class="card" style="border-top: 4px solid var(--pink); box-shadow: 0 0 20px rgba(236, 72, 153, 0.2);">
+            <span class="level-tag" style="background: var(--pink); color: #fff;">🎓 DOCTORAL RESEARCH</span>
+            <h2>情意測驗診斷 (Affective CDM)</h2>
+            <div class="phd-box">> 任務描述：這不再是打怪！這是 RPG 的「NPC 陣營系統」。沒有絕對對錯，只有「性格標籤」是否產生共鳴。</div>
+
+            <h3>📌 Q-matrix 轉念：T-matrix (Trait Matrix)</h3>
+            <p>我們不再問「這題需要什麼能力？」，而是問「<strong>選這個選項的人，背後受到哪些心理特質驅動？</strong>」</p>
+
+            <hr>
+
+            <h3>📌 參數的重新詮釋 (GDINA 變形)</h3>
+            <div class="param-list">
+                <div class="param-item phd-param"><b>$\boldsymbol{\alpha}_n$ (Latent Profile)</b>: 潛在性格輪廓。不再是技能，而是「你是否擁有該性格」(0 或 1)。</div>
+                <div class="param-item phd-param"><b>$\delta_{i0}$ (Base Endorsement)</b>: 社會期許底線。完全沒這性格卻依然選擇「同意」的機率。</div>
+                <div class="param-item phd-param"><b>$\delta_{ik}$ (Trait Main Effect)</b>: 真實性格驅動力。</div>
+                <div class="param-item phd-param"><b>Slip $\rightarrow$ Concealment</b>: 傳統的「手殘」，變成「壓抑/隱藏真實性格」。</div>
+                <div class="param-item phd-param"><b>Guess $\rightarrow$ Faking Good</b>: 傳統的「瞎猜」，變成「社會期許的作假」。</div>
+            </div>
+            
+            <hr>
+
+            <h3>🛡️ 系統 Bug 與開發挑戰 (口試防禦指南)</h3>
+            <div class="challenge-container">
+                <div class="challenge-card">
+                    <div class="challenge-title">🐛 Bug 1：T-matrix 的主觀性迷霧</div>
+                    <p style="font-size: 0.9em; color: #cbd5e1;">情意特質界線模糊，專家人工定義的矩陣極易出錯。</p>
+                    <div class="solution-box">
+                        <div class="solution-title">🔧 修補：實證資料驅動驗證</div>
+                        <p>使用 <b>Wald Test</b> 或 G-DINA 內建的矩陣驗證演算法，讓數據校正矩陣。</p>
+                    </div>
+                </div>
+
+                <div class="challenge-card">
+                    <div class="challenge-title">🐛 Bug 2：連續變數被「強行降維」</div>
+                    <p style="font-size: 0.9em; color: #cbd5e1;">人類性格通常是連續的常態分配，硬切成 0 和 1 會導致訊息遺失。</p>
+                    <div class="solution-box">
+                        <div class="solution-title">🔧 修補：引入高階模型 (HO-CDM)</div>
+                        <p>保留總體連續能力值 $\theta$ 作為高階核心，低階維持 $\alpha$ 特徵標籤。</p>
+                    </div>
+                </div>
+
+                <div class="challenge-card">
+                    <div class="challenge-title">🐛 Bug 3：局部獨立性被嚴重破壞</div>
+                    <p style="font-size: 0.9em; color: #cbd5e1;">情意測驗常有題組效應（例如某題喚起特定情緒干擾下一題）。</p>
+                    <div class="solution-box">
+                        <div class="solution-title">🔧 修補：Copula 函數或題組模型</div>
+                        <p>加入 <b>Copula 函數</b> 吸收殘差相關，或使用 <b>Testlet</b> 聯合估計。</p>
+                    </div>
+                </div>
+                
+                <div class="challenge-card">
+                    <div class="challenge-title">🐛 Bug 4：折疊效應 (Unfolding Effect)</div>
+                    <p style="font-size: 0.9em; color: #cbd5e1;">傳統是能力越強勝率越高(Dominance)。但情意有時是「過猶不及」(Unfolding)。</p>
+                    <div class="solution-box">
+                        <div class="solution-title">🔧 修補：理想點認知診斷模型 (Ideal-Point CDM)</div>
+                        <p>改用空間距離計算，距離越近（產生共鳴），選「同意」機率才越高。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const btns = document.querySelectorAll('.tab-btn');
+        const sections = document.querySelectorAll('.content-section');
+
+        btns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.dataset.target;
+                btns.forEach(b => b.classList.remove('active'));
+                sections.forEach(s => s.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(target).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

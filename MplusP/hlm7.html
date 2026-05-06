@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - Level 7 潛在成長曲線模型 (LGM)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #c0392b; }
+        .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
+        .level-title { font-weight: bold; color: #922b21; border-bottom: 1px solid #e6b0aa; padding-bottom: 5px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回 HLM 10 階藍圖</a>
+
+    <h1>🏢 Level 7: 潛在成長曲線模型 (LGM)</h1>
+    <p><strong>研究目的：</strong>我們追蹤了學生四個學期的數學成績（Wide format，長寬資料格式）。我們想計算出學生們的「起始成績 (Intercept)」和「成長速度 (Slope)」，並看看起點高的人，進步速度是比較快還是比較慢。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (hlm7data.dat)</h2>
+        <p>資料格式：學生ID, 第一學期(y1), 第二學期(y2), 第三學期(y3), 第四學期(y4)</p>
+        <pre id="dataContent">1 60 65 72 78
+2 85 86 87 88
+3 50 60 75 85
+4 70 72 71 74
+5 90 92 95 98</pre>
+        <button class="btn" onclick="downloadFile('hlm7data.dat', 'dataContent', 'msg1')">⬇️ 下載 hlm7data.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 下載語法檔 (hlm7_lgm.inp)</h2>
+        <p>Mplus 處理 LGM 非常簡單，它提供了一個 <code>|</code> (管線符號) 來直接定義截距與斜率：</p>
+        <pre id="inpContent">TITLE: Latent Growth Model (Linear);
+DATA: FILE IS hlm7data.dat;
+VARIABLE: 
+  NAMES ARE id y1 y2 y3 y4;
+  USEVARIABLES ARE y1 y2 y3 y4;
+
+MODEL: 
+  ! i 代表 Intercept (截距/起點)
+  ! s 代表 Slope (斜率/成長率)
+  ! 後面的 @0, @1 代表時間的間隔 (線性成長)
+  i s | y1@0 y2@1 y3@2 y4@3;  
+
+OUTPUT: SAMPSTAT STANDARDIZED;</pre>
+        <button class="btn" onclick="downloadFile('hlm7_lgm.inp', 'inpContent', 'msg2')">⬇️ 下載 hlm7_lgm.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: 報表重點解讀</h2>
+        
+        <pre>
+Means
+    I                 <span class="highlight-yellow">71.000</span>      1.520     46.711      0.000
+    S                  <span class="highlight-yellow">4.500</span>      0.850      5.294      0.000
+
+Variances
+    I                 <span class="highlight-yellow">215.500</span>     45.200      4.767      <span class="highlight-green">0.000</span>
+    S                  <span class="highlight-yellow">12.400</span>      3.100      4.000      <span class="highlight-green">0.000</span>
+
+I  WITH
+    S                 <span class="highlight-yellow">-25.300</span>     10.500     -2.409      <span class="highlight-green">0.016</span>
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <div class="level-title">1. Means (平均起點與平均成長率)</div>
+            <p>這群學生的平均起始成績 (I) 是 71 分，每個學期平均進步 (S) 4.5 分。</p>
+
+            <div class="level-title">2. Variances (個別差異)</div>
+            <p>起點 (I) 和進步速度 (S) 的變異數都是顯著的 (<span class="highlight-green">p=0.000</span>)。這代表每個學生的起點不一樣，而且<strong>每個學生的進步速度也不一樣！</strong>（這就是為什麼我們需要多層次/隨機斜率的概念）。</p>
+
+            <div class="level-title">3. I WITH S (起點與成長的相關性)</div>
+            <p>共變異數 (I WITH S) 為 <span class="highlight-yellow">-25.300</span> 且顯著。這是一個<strong>負相關</strong>，意思是：「起始成績越高的學生，進步速度越慢（可能遇到了天花板效應）；而起始成績較低的學生，進步幅度反而較大！」</p>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            const msg = document.getElementById(msgId);
+            msg.style.display = 'inline';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

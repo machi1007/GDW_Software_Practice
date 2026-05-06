@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - Level 4 多層次路徑分析</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #c0392b; }
+        .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
+        .level-title { font-weight: bold; color: #922b21; border-bottom: 1px solid #e6b0aa; padding-bottom: 5px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回 HLM 10 階藍圖</a>
+
+    <h1>🏢 Level 4: 多層次路徑分析 (Multilevel Path Analysis)</h1>
+    <p><strong>研究目的：</strong>在第一層 (學生)，我們想看「學習動機 (MOTIV)」是否能同時預測「數學 (MATH)」與「閱讀 (READ)」。在第二層 (班級)，我們想看「班級人數 (C_SIZE)」是否會影響該班的平均數學與閱讀成績。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (hlm4data.dat)</h2>
+        <pre id="dataContent">1 80 82 7 30
+1 85 80 8 30
+1 78 75 6 30
+2 90 88 9 20
+2 92 90 8 20
+2 88 85 7 20</pre>
+        <button class="btn" onclick="downloadFile('hlm4data.dat', 'dataContent', 'msg1')">⬇️ 下載 hlm4data.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 下載語法檔 (hlm4_model.inp)</h2>
+        <pre id="inpContent">TITLE: Multilevel Path Analysis;
+DATA: FILE IS hlm4data.dat;
+VARIABLE: 
+  NAMES ARE class_id math read motiv c_size;
+  USEVARIABLES ARE class_id math read motiv c_size;
+  CLUSTER IS class_id;  
+  WITHIN ARE motiv;       
+  BETWEEN ARE c_size;    
+
+ANALYSIS: 
+  TYPE IS TWOLEVEL; 
+
+MODEL: 
+  %WITHIN%
+  math read ON motiv;  ! 動機同時預測兩個科目
+
+  %BETWEEN%
+  math read ON c_size; ! 班級人數預測班級平均成績
+  math WITH read;      ! 估計兩科班級平均成績的殘差相關</pre>
+        <button class="btn" onclick="downloadFile('hlm4_model.inp', 'inpContent', 'msg2')">⬇️ 下載 hlm4_model.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: 路徑分析報表解讀</h2>
+        <pre>
+<strong style="color:#d35400;">Between Level</strong>
+ MATH     ON
+    C_SIZE            <span class="highlight-yellow">-0.320</span>      0.115     -2.782      <span class="highlight-green">0.005</span>
+ READ     ON
+    C_SIZE            <span class="highlight-yellow">-0.280</span>      0.120     -2.333      <span class="highlight-green">0.020</span>
+        </pre>
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <p>在 <code>Between Level</code> 中，班級人數 (C_SIZE) 對數學與閱讀的預測 Estimate 都是負值（-0.320 與 -0.280），且 <span class="highlight-green">P-Value 皆小於 0.05</span>。這表示「班級人數越多的班級，其整體的平均數學與閱讀成績顯著較低」。這驗證了小班制可能帶來較好學習成效的假設。</p>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            const msg = document.getElementById(msgId);
+            msg.style.display = 'inline';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

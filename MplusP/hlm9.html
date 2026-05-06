@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - Level 9 多層次潛在轉換分析 (MLTA)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #c0392b; }
+        .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回 HLM 10 階藍圖</a>
+
+    <h1>🏢 Level 9: 多層次潛在轉換分析 (MLTA)</h1>
+    <p><strong>研究目的：</strong>結合追蹤資料 (Time 1 與 Time 2) 與嵌套結構 (班級)。探討學生在兩個時間點之間的「類別狀態轉換 (Transition)」，並分析班級層次是否會影響這個轉換機率。</p>
+
+    <div class="step-container">
+        <h2>📝 Step 1: 語法檔核心結構 (hlm9_mlta.inp)</h2>
+        <pre id="inpContent">TITLE: Multilevel LTA;
+DATA: FILE IS hlm9data.dat;
+VARIABLE: 
+  NAMES ARE class_id u11 u12 u21 u22; ! 第一碼是時間，第二碼是題目
+  USEVARIABLES ARE u11-u22;
+  CATEGORICAL ARE u11-u22;
+  CLUSTER IS class_id;  
+  
+  ! C1 代表 Time 1 的類別，C2 代表 Time 2 的類別
+  ! CB 代表班級層次的分類
+  CLASSES = CB(2) C1(2) C2(2); 
+
+ANALYSIS: 
+  TYPE IS TWOLEVEL MIXTURE; 
+
+MODEL:
+  %WITHIN%
+  %OVERALL%
+  C2 ON C1; ! 學生在 T2 的類別取決於 T1 的狀態 (轉換矩陣)
+  
+  %BETWEEN%
+  %OVERALL%
+  C1 ON CB; ! 班級類型影響學生 T1 的起始狀態
+  C2 ON C1 CB; ! 班級類型同時影響學生的轉換狀態</pre>
+        <button class="btn" onclick="downloadFile('hlm9_mlta.inp', 'inpContent', 'msg1')">⬇️ 下載 hlm9_mlta.inp</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 核心觀念：轉換機率矩陣 (Transition Probabilities)</h2>
+        <div class="explanation-box">
+            <p>這是一個非常強大的高階模型。分析結果會告訴我們：<br>
+            假設學生在 Time 1 處於「低動機組」，到了 Time 2，他維持低動機的機率是多少？跳級到「高動機組」的機率又是多少？<br>
+            而在 <strong>MLTA</strong> 中，這個機率並不是固定的，它會被 <code>CB (班級類型)</code> 所調節！也就是說，在良好班風的班級中，低動機學生逆襲轉變為高動機的機率會顯著提高！</p>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            const msg = document.getElementById(msgId);
+            msg.style.display = 'inline';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

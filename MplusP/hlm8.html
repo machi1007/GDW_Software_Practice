@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - Level 8 多層次潛在類別分析 (MLCA)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #c0392b; }
+        .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
+        .level-title { font-weight: bold; color: #922b21; border-bottom: 1px solid #e6b0aa; padding-bottom: 5px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回 HLM 10 階藍圖</a>
+
+    <h1>🏢 Level 8: 多層次潛在類別分析 (MLCA)</h1>
+    <p><strong>研究目的：</strong>根據學生的 3 題學習行為 (u1-u3，作答為 0 或 1)，我們想在「學生層次 (CW)」分出 2 種學習型態的學生；同時，在「班級層次 (CB)」根據這兩種學生的組成比例，分出 2 種不同風氣的班級。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (hlm8data.dat)</h2>
+        <pre id="dataContent">1 1 1 1
+1 1 0 1
+1 0 1 1
+2 0 0 0
+2 0 1 0
+2 0 0 0</pre>
+        <button class="btn" onclick="downloadFile('hlm8data.dat', 'dataContent', 'msg1')">⬇️ 下載 hlm8data.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 語法檔核心 (hlm8_mlca.inp)</h2>
+        <pre id="inpContent">TITLE: Multilevel LCA;
+DATA: FILE IS hlm8data.dat;
+VARIABLE: 
+  NAMES ARE class_id u1 u2 u3;
+  USEVARIABLES ARE u1 u2 u3;
+  CATEGORICAL ARE u1 u2 u3; ! 宣告為類別變項
+  CLUSTER IS class_id;  
+  
+  ! 宣告兩個層次的潛在類別數量
+  ! CB: Class Between (班級層次分為2類)
+  ! CW: Class Within (學生層次分為2類)
+  CLASSES = CB(2) CW(2); 
+
+ANALYSIS: 
+  TYPE IS TWOLEVEL MIXTURE; ! 結合多層次與混合模型
+
+MODEL:
+  %WITHIN%
+  %OVERALL%
+  
+  %BETWEEN%
+  %OVERALL%
+  CW ON CB; ! 班級的類型(CB)會影響班上學生屬於哪種類型(CW)的機率</pre>
+        <button class="btn" onclick="downloadFile('hlm8_mlca.inp', 'inpContent', 'msg2')">⬇️ 下載 hlm8_mlca.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: 核心觀念解析</h2>
+        <div class="explanation-box">
+            <p>在一般 LCA 中，我們只分類學生；但在 MLCA 中，Mplus 會算出一個「<strong>跨層次的條件機率</strong>」。例如：<br>
+            假設 CB 類別 1 是「積極型班級」，CW 類別 1 是「認真型學生」。報表會告訴我們：如果這個班級屬於「積極型班級」，那麼裡面的學生有多大的機率會是「認真型學生」？這讓我們能精準描繪「環境 (班級)」如何影響「個體特質分布」。</p>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            const msg = document.getElementById(msgId);
+            msg.style.display = 'inline';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

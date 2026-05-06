@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - Level 3 多層次中介效應</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #c0392b; }
+        .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
+        .level-title { font-weight: bold; color: #922b21; border-bottom: 1px solid #e6b0aa; padding-bottom: 5px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回 HLM 10 階藍圖</a>
+
+    <h1>🏢 Level 3: 多層次中介效應 (Multilevel Mediation 1-1-1)</h1>
+    <p><strong>研究目的：</strong>學生的社經地位(SES)是否會透過提升「學習動機(MOTIV)」，進而提高「數學成績(MATH)」？我們需要在個體層次(Within)和班級層次(Between)同時檢定這個中介路徑。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (hlm3data.dat)</h2>
+        <p>資料格式：班級ID(Level 2), 數學(Y), 動機(M), 社經地位(X)</p>
+        <pre id="dataContent">1 80 7 5
+1 85 8 6
+1 78 6 4
+2 90 9 7
+2 92 8 8
+2 88 7 6</pre>
+        <button class="btn" onclick="downloadFile('hlm3data.dat', 'dataContent', 'msg1')">⬇️ 下載 hlm3data.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 下載語法檔 (hlm3_model.inp)</h2>
+        <pre id="inpContent">TITLE: 1-1-1 Multilevel Mediation;
+DATA: FILE IS hlm3data.dat;
+VARIABLE: 
+  NAMES ARE class_id math motiv ses;
+  USEVARIABLES ARE class_id math motiv ses;
+  CLUSTER IS class_id;  
+  WITHIN ARE ses;       ! 將自變數設定在 Level 1
+  ! 注意：Y 和 M 沒有設定，Mplus 會自動把它們拆解到兩層次
+
+ANALYSIS: 
+  TYPE IS TWOLEVEL; 
+
+MODEL: 
+  %WITHIN%
+  math ON motiv ses;  ! Y on M, X
+  motiv ON ses;       ! M on X
+
+  %BETWEEN%
+  math ON motiv;      ! 班級層次的路徑
+  
+MODEL INDIRECT:
+  math IND motiv ses; ! 要求 Mplus 計算 X -> M -> Y 的中介效應</pre>
+        <button class="btn" onclick="downloadFile('hlm3_model.inp', 'inpContent', 'msg2')">⬇️ 下載 hlm3_model.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: 中介效應報表解讀</h2>
+        <p>在報表的最下方，會出現 <strong>TOTAL, TOTAL INDIRECT, SPECIFIC INDIRECT, AND DIRECT EFFECTS</strong> 區塊：</p>
+        
+        <pre>
+<strong style="color:#d35400;">Within Level</strong>
+Specific Indirect
+  MATH      
+    MOTIV
+    SES               <span class="highlight-yellow">0.250</span>      0.082      3.048      <span class="highlight-green">0.002</span>
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <div class="level-title">Specific Indirect (特定間接效應)</div>
+            <p>看 <code>MATH</code> 由 <code>MOTIV</code> 到 <code>SES</code> 的路徑（這就是 SES -> MOTIV -> MATH）。</p>
+            <p>結果顯示 Estimate 為 <span class="highlight-yellow">0.250</span>，且 <span class="highlight-green">P-Value = 0.002 (< 0.05)</span>。這代表在個體層次（學生個人）中，「社經地位 $\rightarrow$ 動機 $\rightarrow$ 數學」的中介路徑是顯著成立的！社經較高的學生，確實有較高的動機，進而帶來較好的數學表現。</p>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            const msg = document.getElementById(msgId);
+            msg.style.display = 'inline';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

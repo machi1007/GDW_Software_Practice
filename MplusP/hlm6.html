@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - Level 6 多層次結構方程模型 (MSEM)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #c0392b; }
+        .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回 HLM 10 階藍圖</a>
+
+    <h1>🏢 Level 6: 多層次結構方程模型 (MSEM)</h1>
+    <p><strong>研究目的：</strong>我們現在有兩個潛在變項：學習動機 (題項 y1-y3) 與 學習投入 (題項 y4-y6)。我們想看在學生層次與班級層次，「動機」是否都能預測「投入」。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (hlm6data.dat)</h2>
+        <p>資料格式：班級ID(Level 2), 動機三題(y1-y3), 投入三題(y4-y6)</p>
+        <pre id="dataContent">1 4 5 4 5 4 5
+1 5 4 4 4 5 5
+1 4 4 5 5 4 4
+2 2 3 2 3 2 3
+2 3 2 2 2 3 2
+2 2 2 3 3 2 2</pre>
+        <button class="btn" onclick="downloadFile('hlm6data.dat', 'dataContent', 'msg1')">⬇️ 下載 hlm6data.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 語法檔核心 (hlm6_msem.inp)</h2>
+        <pre id="inpContent">TITLE: Multilevel SEM;
+DATA: FILE IS hlm6data.dat;
+VARIABLE: 
+  NAMES ARE class_id y1 y2 y3 y4 y5 y6;
+  USEVARIABLES ARE class_id y1-y6;
+  CLUSTER IS class_id;  
+
+ANALYSIS: 
+  TYPE IS TWOLEVEL; 
+
+MODEL: 
+  %WITHIN%
+  ! 1. 測量模型 (建立潛在變項)
+  MOTIV_W BY y1 y2 y3;
+  ENGAG_W BY y4 y5 y6;
+  ! 2. 結構模型 (建立預測關係)
+  ENGAG_W ON MOTIV_W;  
+
+  %BETWEEN%
+  ! 1. 測量模型
+  MOTIV_B BY y1 y2 y3;
+  ENGAG_B BY y4 y5 y6;
+  ! 2. 結構模型
+  ENGAG_B ON MOTIV_B;  </pre>
+        <button class="btn" onclick="downloadFile('hlm6_msem.inp', 'inpContent', 'msg2')">⬇️ 下載 hlm6_msem.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: 核心觀念：為何要用 MSEM？</h2>
+        <div class="explanation-box">
+            <p>傳統的 HLM 只能處理「觀察變數 (Observed Variables)」的運算（例如直接把題目加總取平均）。而 MSEM 允許我們保留題目測量時的<strong>測量誤差 (Measurement Error)</strong>。</p>
+            <p>透過在 Level 1 和 Level 2 都建立潛在變項 (Latent Variables)，MSEM 估計出來的路徑係數（例如 <code>ENGAG_B ON MOTIV_B</code>）會比傳統 HLM 更加純粹與準確！</p>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            const msg = document.getElementById(msgId);
+            msg.style.display = 'inline';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

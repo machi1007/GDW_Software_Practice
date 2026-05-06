@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - Level 10 動態結構方程模型 (DSEM)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #c0392b; }
+        .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回 HLM 10 階藍圖</a>
+
+    <h1>🏢 Level 10: 動態結構方程模型 (DSEM)</h1>
+    <p><strong>研究目的：</strong>這處理的是經驗取樣法 (ESM/EMA) 的資料。例如：連續測量一位學生 14 天的情緒(Mood)和壓力(Stress)。我們想分析「昨天的壓力」是否會影響「今天的情緒」(自迴歸與交叉延遲效應)，且每個人的影響程度是否不同。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (hlm10data.dat)</h2>
+        <p>資料格式：學生ID(Level 2), 時間點(Level 1), 情緒分數, 壓力分數</p>
+        <pre id="dataContent">1 1 5 8
+1 2 4 9
+1 3 6 5
+2 1 7 4
+2 2 8 3
+2 3 7 3</pre>
+        <button class="btn" onclick="downloadFile('hlm10data.dat', 'dataContent', 'msg1')">⬇️ 下載 hlm10data.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 語法檔核心 (hlm10_dsem.inp)</h2>
+        <pre id="inpContent">TITLE: Dynamic SEM (DSEM);
+DATA: FILE IS hlm10data.dat;
+VARIABLE: 
+  NAMES ARE id time mood stress;
+  USEVARIABLES ARE id mood stress;
+  CLUSTER IS id;  ! 注意！在這裡群體變成了「人」
+  TINTERVAL = time(1); ! 宣告時間間隔 (時間序列分析必備)
+
+ANALYSIS: 
+  TYPE IS TWOLEVEL RANDOM DSEM; 
+  ESTIMATOR = BAYES; ! DSEM 必須使用貝氏估計
+
+MODEL:
+  %WITHIN%
+  ! 1. 自迴歸 (Autoregressive): 昨天的情緒影響今天的情緒
+  phi_m | mood ON mood&1;  ! &1 代表滯後一期 (Lag 1)
+  
+  ! 2. 交叉延遲 (Cross-lagged): 昨天的壓力影響今天的情緒
+  beta_s | mood ON stress&1; 
+
+  %BETWEEN%
+  ! 分析每個人在「情緒慣性(phi_m)」和「壓力敏感度(beta_s)」上的差異
+  mood stress phi_m beta_s WITH mood stress phi_m beta_s;</pre>
+        <button class="btn" onclick="downloadFile('hlm10_dsem.inp', 'inpContent', 'msg2')">⬇️ 下載 hlm10_dsem.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: DSEM 終極觀念解讀</h2>
+        <div class="explanation-box">
+            <p><strong>這是多層次模型概念的翻轉！</strong></p>
+            <p>傳統的 HLM 是將「人」包在「班級」裡。<br>
+            而在 DSEM 中，我們是將「連續測量的時間點 (Level 1)」包在「人 (Level 2)」裡面。這讓我們可以算出每一個人專屬的 <strong>「情緒慣性 (慣性越大代表情緒越難平復)」</strong>，並進一步在 Level 2 用其他特質（例如神經質程度）來預測這個情緒慣性。</p>
+            <p>這需要仰賴貝氏估計法 (Bayesian Estimation) 以及龐大的運算資源，是目前追蹤資料分析的最高殿堂！</p>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            const msg = document.getElementById(msgId);
+            msg.style.display = 'inline';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

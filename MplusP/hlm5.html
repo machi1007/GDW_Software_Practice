@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - Level 5 多層次驗證性因素分析 (MCFA)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #c0392b; }
+        .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回 HLM 10 階藍圖</a>
+
+    <h1>🏢 Level 5: 多層次驗證性因素分析 (MCFA)</h1>
+    <p><strong>研究目的：</strong>我們測量了 4 題「班級氣氛 (y1-y4)」。我們需要透過 MCFA 確認這 4 題在學生個人層次 (Within) 與班級整體層次 (Between) 是否都能良好地萃取出「班級氣氛 (Climate)」這個潛在變項。</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (hlm5data.dat)</h2>
+        <p>資料格式：班級ID(Level 2), 題目 y1, y2, y3, y4 (1-5分)</p>
+        <pre id="dataContent">1 5 4 5 5
+1 4 4 5 4
+1 5 5 4 5
+2 2 3 2 2
+2 3 2 3 2
+2 2 2 2 3
+3 4 3 4 4
+3 5 4 5 4</pre>
+        <button class="btn" onclick="downloadFile('hlm5data.dat', 'dataContent', 'msg1')">⬇️ 下載 hlm5data.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 語法檔核心 (hlm5_mcfa.inp)</h2>
+        <pre id="inpContent">TITLE: Multilevel CFA;
+DATA: FILE IS hlm5data.dat;
+VARIABLE: 
+  NAMES ARE class_id y1 y2 y3 y4;
+  USEVARIABLES ARE class_id y1 y2 y3 y4;
+  CLUSTER IS class_id;  
+
+ANALYSIS: 
+  TYPE IS TWOLEVEL; 
+
+MODEL: 
+  %WITHIN%
+  ! 建立第一層的潛在變項 F_W
+  F_W BY y1 y2 y3 y4;  
+
+  %BETWEEN%
+  ! 建立第二層的潛在變項 F_B
+  F_B BY y1 y2 y3 y4;  
+
+OUTPUT: STANDARDIZED MODINDICES;</pre>
+        <button class="btn" onclick="downloadFile('hlm5_mcfa.inp', 'inpContent', 'msg2')">⬇️ 下載 hlm5_mcfa.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: 報表解讀重點：ICC (組內相關係數)</h2>
+        <p>在做 MCFA 之前，報表會先吐出各題目的 <strong>Intraclass Correlation (ICC)</strong>：</p>
+        <div class="explanation-box">
+            <p><strong>ICC 的意義：</strong>ICC 代表「組間變異佔總變異的比例」。一般來說，如果題目的 ICC <strong>大於 0.05 (甚至 0.10)</strong>，代表班級與班級之間的差異夠大，這個資料才「值得」用多層次模型 (TWOLEVEL) 去做分析；如果 ICC 趨近於 0，代表班級之間沒什麼差別，直接用一般的 CFA 就可以了。</p>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            const msg = document.getElementById(msgId);
+            msg.style.display = 'inline';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

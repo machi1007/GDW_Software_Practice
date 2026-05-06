@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - Level 2 隨機斜率與跨層次交互作用</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #c0392b; }
+        .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
+        .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
+        .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
+        .level-title { font-weight: bold; color: #922b21; border-bottom: 1px solid #e6b0aa; padding-bottom: 5px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回 HLM 10 階藍圖</a>
+
+    <h1>🏢 Level 2: 隨機斜率與跨層次交互作用 (Random Slopes & Cross-level Interaction)</h1>
+    <p><strong>研究目的：</strong>(1) 探討社經地位(SES)對數學(MATH)的影響力，是否在不同班級間有所不同（隨機斜率）。(2) 老師的教學年資(T_EXP)能否解釋這種影響力的差異？也就是說，資深老師帶的班，SES 的影響會不會變小（跨層次交互作用）？</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (hlm2data.dat)</h2>
+        <p>資料格式：班級ID(Level 2), 數學成績(Y), 社經地位(Level 1), 老師年資(Level 2)</p>
+        <pre id="dataContent">1 80 5 5
+1 85 6 5
+1 78 4 5
+2 90 7 10
+2 92 8 10
+2 88 6 10
+3 70 3 2
+3 75 4 2</pre>
+        <button class="btn" onclick="downloadFile('hlm2data.dat', 'dataContent', 'msg1')">⬇️ 下載 hlm2data.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 下載語法檔 (hlm2_model.inp)</h2>
+        <pre id="inpContent">TITLE: Random Slopes and Cross-Level Interaction;
+DATA: FILE IS hlm2data.dat;
+VARIABLE: 
+  NAMES ARE class_id math ses t_exp;
+  USEVARIABLES ARE class_id math ses t_exp;
+  CLUSTER IS class_id;  
+  WITHIN ARE ses;       
+  BETWEEN ARE t_exp;    
+
+ANALYSIS: 
+  TYPE IS TWOLEVEL RANDOM;  ! 注意這裡多了 RANDOM
+
+MODEL: 
+  %WITHIN%
+  S | math ON ses;  ! 定義 SES 對 Math 的斜率為隨機變數 S
+
+  %BETWEEN%
+  math ON t_exp;    ! 預測截距 (班級平均成績)
+  S ON t_exp;       ! 預測斜率 (跨層次交互作用！)</pre>
+        <button class="btn" onclick="downloadFile('hlm2_model.inp', 'inpContent', 'msg2')">⬇️ 下載 hlm2_model.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>🏃 Step 3: 報表重點解讀</h2>
+        <p>這次我們要注意 <code>TYPE IS TWOLEVEL RANDOM</code> 產生的 <code>S</code> (斜率變數) 的分析結果：</p>
+        
+        <pre>
+MODEL RESULTS
+                   <span class="highlight-yellow">Estimate</span>       S.E.  Est./S.E.    <span class="highlight-green">P-Value</span>
+
+<strong style="color:#d35400;">Between Level</strong> (第二層：群體/班級)
+ S        ON
+    T_EXP            <span class="highlight-yellow">-0.150</span>      0.050     -3.000      <span class="highlight-green">0.003</span>
+
+ Variances
+    S                 <span class="highlight-yellow">0.024</span>      0.010      2.400      <span class="highlight-green">0.016</span>
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            <div class="level-title">1. S 的變異數 (Variances of S)</div>
+            <p>在 Between 層次看到 S 的 Variance <span class="highlight-green">P-value = 0.016 (< 0.05)</span>。這代表每個班級「SES 對數學的影響力 (斜率)」確實不一樣！有些班級影響很大，有些班級影響很小，我們成功驗證了<strong>隨機斜率</strong>的存在。</p>
+
+            <div class="level-title">2. 跨層次交互作用 (S ON T_EXP)</div>
+            <p>看 <code>S ON T_EXP</code> 的結果，Estimate 是 <span class="highlight-yellow">-0.150</span> 且 <span class="highlight-green">顯著 (p = 0.003)</span>。這意思是：老師年資 (T_EXP) 每增加一年，SES 對數學的影響力 (S) 就會<strong>下降</strong> 0.150。也就是說，資深老師能有效彌補學生家庭背景的差距！</p>
+        </div>
+    </div>
+
+    <script>
+        function downloadFile(filename, elementId, msgId) {
+            const content = document.getElementById(elementId).innerText;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            const msg = document.getElementById(msgId);
+            msg.style.display = 'inline';
+            setTimeout(() => { msg.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>

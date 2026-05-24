@@ -5,25 +5,129 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mplus 教學 - Level 4 多層次路徑分析</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; }
         h1 { color: #c0392b; }
         .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
         .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
         pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
         .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
         .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
-        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
-        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        
+        /* 報表解讀專用樣式 */
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; font-family: monospace; font-size: 1.1em;}
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; font-weight: bold;}
         .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
         .level-title { font-weight: bold; color: #922b21; border-bottom: 1px solid #e6b0aa; padding-bottom: 5px; margin-top: 15px; }
+        
+        /* 圖解符號表樣式 */
+        .legend-box { display: flex; gap: 15px; flex-wrap: wrap; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
     </style>
 </head>
 <body>
 
-    <a href="index.html" class="nav-back">← 返回 HLM 10 階藍圖</a>
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
 
-    <h1>🏢 Level 4: 多層次路徑分析 (Multilevel Path Analysis)</h1>
-    <p><strong>研究目的：</strong>在第一層 (學生)，我們想看「學習動機 (MOTIV)」是否能同時預測「數學 (MATH)」與「閱讀 (READ)」。在第二層 (班級)，我們想看「班級人數 (C_SIZE)」是否會影響該班的平均數學與閱讀成績。</p>
+    <h1>🏢 Level 4: 多層次路徑分析 (Multilevel Path Analysis)</h1>    
+    
+    <div class="step-container">
+        <h2>🧠 原理與應用 (Principle & Application)</h2>
+        
+        <h3>1. 為什麼要用「路徑分析」而不是分開跑迴歸？</h3>
+        <p>當我們有兩個以上的依變項（例如：數學 MATH 和閱讀 READ）時，初學者常會犯的錯是「分開跑兩次迴歸」。但這會忽略一個事實：<strong>同一個學生的數學和閱讀成績通常是高度相關的</strong>。多層次路徑分析允許我們將多個變數放在「同一個模型」中同時估計，並處理變數之間的共變關係（Covariance），避免統計上的型一錯誤（Type I error）膨脹。</p>
+
+        <h3>2. 關鍵語法「WITH (相關/共變)」的意義</h3>
+        <p>在路徑分析中，我們常會在模型加入 <code>math WITH read;</code> 這樣的語法。它的意思是：「在排除掉預測變數的影響後，去估計這兩個變數之間殘差的相關性」。在 Level 2 放這個指令，可以幫助我們了解「數學平均成績高的班級，閱讀平均成績是否也傾向比較高」。</p>
+
+        <h3>3. 應用何處？</h3>
+        <p>多層次路徑分析專門處理具有<strong>「多重指標」或「複雜關聯網絡」</strong>的嵌套數據：</p>
+        <ul>
+            <li><strong>教育評量 (如本例)：</strong>同時探討「班級人數 (L2)」與「學習動機 (L1)」對學生「文科」與「理科」多項表現的綜合影響。</li>
+            <li><strong>組織心理學：</strong>探討「主管轉型領導 (L2)」如何同時預測員工的「工作績效 (L1)」、「組織公民行為 (L1)」與「離職意圖 (L1)」，並處理這三個指標之間的共變。</li>
+            <li><strong>公衛與醫療：</strong>探討不同社區的「醫療資源密度 (L2)」如何同時影響居民的「生理健康指標 (L1)」與「心理健康指標 (L1)」。</li>
+        </ul>
+    </div>
+
+    <div class="step-container">
+        <h2>📊 模型概念與路徑圖 (Path Diagram)</h2>
+        <p>在這個模型中，我們擁有兩個平行並列的依變項（MATH 和 READ）。它們在底層同時被 MOTIV 預測，並在頂層同時被 C_SIZE 預測，且頂層的兩者之間具有相關性 (雙箭頭)。</p>
+        
+        <svg viewBox="0 0 700 450" style="background:#fff; border-radius:8px; border:1px solid #ccc; width:100%; height:auto; display:block; margin:0 auto;">
+            <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#333" />
+                </marker>
+                <marker id="arrow-start" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 10 0 L 0 5 L 10 10 z" fill="#333" />
+                </marker>
+            </defs>
+            
+            <line x1="50" y1="225" x2="650" y2="225" stroke="#95a5a6" stroke-width="2" stroke-dasharray="8,8" />
+            <text x="60" y="215" font-size="16" fill="#7f8c8d" font-weight="bold">Between Level (Level 2: 班級層次)</text>
+            <text x="60" y="245" font-size="16" fill="#7f8c8d" font-weight="bold">Within Level (Level 1: 學生層次)</text>
+
+            <rect x="70" y="80" width="100" height="60" rx="4" fill="#e8f8f5" stroke="#1abc9c" stroke-width="2" />
+            <text x="120" y="115" text-anchor="middle" font-size="18" font-weight="bold" fill="#16a085">C_SIZE</text>
+
+            <circle cx="350" cy="110" r="45" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
+            <text x="350" y="115" text-anchor="middle" font-size="18" font-weight="bold" fill="#d35400">MATH</text>
+            
+            <circle cx="550" cy="110" r="45" fill="#f4ecf7" stroke="#8e44ad" stroke-width="2" />
+            <text x="550" y="115" text-anchor="middle" font-size="18" font-weight="bold" fill="#8e44ad">READ</text>
+
+            <line x1="170" y1="110" x2="295" y2="110" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="235" y="100" text-anchor="middle" font-size="14" fill="#c0392b" font-family="monospace">math ON c_size;</text>
+
+            <path d="M 170 90 Q 360 -10 520 85" fill="transparent" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="360" y="35" text-anchor="middle" font-size="14" fill="#c0392b" font-family="monospace">read ON c_size;</text>
+
+            <path d="M 390 130 Q 450 160 510 130" fill="transparent" stroke="#333" stroke-width="2" marker-start="url(#arrow-start)" marker-end="url(#arrow)" />
+            <text x="450" y="175" text-anchor="middle" font-size="14" fill="#c0392b" font-family="monospace">math WITH read;</text>
+
+            <rect x="70" y="300" width="100" height="60" rx="4" fill="#eaf2f8" stroke="#3498db" stroke-width="2" />
+            <text x="120" y="335" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">MOTIV</text>
+
+            <rect x="300" y="300" width="100" height="60" rx="4" fill="#eaf2f8" stroke="#3498db" stroke-width="2" />
+            <text x="350" y="335" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">MATH</text>
+
+            <rect x="500" y="300" width="100" height="60" rx="4" fill="#eaf2f8" stroke="#3498db" stroke-width="2" />
+            <text x="550" y="335" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">READ</text>
+
+            <line x1="170" y1="330" x2="290" y2="330" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            
+            <path d="M 170 350 Q 360 430 520 360" fill="transparent" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            
+            <text x="240" y="320" text-anchor="middle" font-size="14" fill="#c0392b" font-family="monospace">math read</text>
+            <text x="240" y="340" text-anchor="middle" font-size="14" fill="#c0392b" font-family="monospace">ON motiv;</text>
+
+            <circle cx="350" cy="300" r="6" fill="#2c3e50" />
+            <circle cx="550" cy="300" r="6" fill="#2c3e50" />
+            
+            <line x1="350" y1="294" x2="350" y2="165" stroke="#e67e22" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+            <line x1="550" y1="294" x2="550" y2="165" stroke="#8e44ad" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+        </svg>
+
+        <div class="legend-box">
+            <div class="legend-item">
+                <svg width="24" height="16"><rect width="24" height="16" fill="white" stroke="#3498db" stroke-width="2"/></svg>
+                <span><strong>矩形：</strong>觀察變項 (Observed Variables)。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="white" stroke="#e67e22" stroke-width="2"/></svg>
+                <span><strong>圓形：</strong>潛在變項。在 L2 代表該科目的班級截距(均值)。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="24" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/></svg>
+                <span><strong>單向箭頭 (ON)：</strong>單向因果預測路徑。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="24" height="10"><path d="M 0 5 Q 10 10 20 5" fill="transparent" stroke="#333" stroke-width="2" marker-start="url(#arrow-start)" marker-end="url(#arrow)"/></svg>
+                <span><strong>雙向箭頭 (WITH)：</strong>相關與共變異 (Covariance)。代表兩個變項間互相有關聯。</span>
+            </div>
+        </div>
+    </div>
+
+    <p><strong>研究目的實作：</strong>在第一層 (學生)，我們想看「學習動機 (MOTIV)」是否能同時預測「數學 (MATH)」與「閱讀 (READ)」。在第二層 (班級)，我們想看「班級人數 (C_SIZE)」是否會影響該班的平均數學與閱讀成績，並探討兩科成績在班級層次的關聯。</p>
 
     <div class="step-container">
         <h2>📦 Step 1: 下載資料檔 (hlm4data.dat)</h2>
@@ -53,10 +157,10 @@ ANALYSIS:
 
 MODEL: 
   %WITHIN%
-  math read ON motiv;  ! 動機同時預測兩個科目
+  math read ON motiv;  ! 一行語法，動機同時預測兩個科目
 
   %BETWEEN%
-  math read ON c_size; ! 班級人數預測班級平均成績
+  math read ON c_size; ! 一行語法，班級人數預測兩科班級平均成績
   math WITH read;      ! 估計兩科班級平均成績的殘差相關</pre>
         <button class="btn" onclick="downloadFile('hlm4_model.inp', 'inpContent', 'msg2')">⬇️ 下載 hlm4_model.inp</button>
         <span id="msg2" class="success-msg">✅ 下載成功！</span>
@@ -64,16 +168,24 @@ MODEL:
 
     <div class="step-container">
         <h2>🏃 Step 3: 路徑分析報表解讀</h2>
+        <p>這次我們將焦點放在 <code>Between Level</code> 的分析結果，確認班級人數的影響以及雙向箭頭的檢定：</p>
         <pre>
 <strong style="color:#d35400;">Between Level</strong>
  MATH     ON
     C_SIZE            <span class="highlight-yellow">-0.320</span>      0.115     -2.782      <span class="highlight-green">0.005</span>
  READ     ON
     C_SIZE            <span class="highlight-yellow">-0.280</span>      0.120     -2.333      <span class="highlight-green">0.020</span>
+
+ MATH     WITH
+    READ               <span class="highlight-yellow">2.450</span>      0.850      2.882      <span class="highlight-green">0.004</span>
         </pre>
         <div class="explanation-box">
             <h3>💡 報表白話文翻譯：</h3>
-            <p>在 <code>Between Level</code> 中，班級人數 (C_SIZE) 對數學與閱讀的預測 Estimate 都是負值（-0.320 與 -0.280），且 <span class="highlight-green">P-Value 皆小於 0.05</span>。這表示「班級人數越多的班級，其整體的平均數學與閱讀成績顯著較低」。這驗證了小班制可能帶來較好學習成效的假設。</p>
+            <div class="level-title">1. 因果預測路徑 (ON)</div>
+            <p>班級人數 (C_SIZE) 對數學與閱讀的預測 Estimate 都是負值（-0.320 與 -0.280），且 <span class="highlight-green">P-Value 皆小於 0.05</span>。這表示「班級人數越多的班級，其整體的平均數學與閱讀成績顯著較低」。這驗證了小班制可能帶來較好綜合學習成效的假設。</p>
+            
+            <div class="level-title">2. 殘差共變異 (WITH)</div>
+            <p><code>MATH WITH READ</code> 的結果顯著 <span class="highlight-green">(P = 0.004)</span>，且 Estimate 為正值。這表示在排除了班級人數的影響後，班級的數學平均成績與閱讀平均成績之間仍有高度的正相關。也就是說，會帶班的老師或資源豐富的學校，通常能讓學生的文理兩科「共同」提升。</p>
         </div>
     </div>
 

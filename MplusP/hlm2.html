@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mplus 教學 - Level 2 隨機斜率與跨層次交互作用</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; }
         h1 { color: #c0392b; }
         .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
         .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
@@ -13,18 +13,111 @@
         .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
         .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
         
-        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
-        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        /* 報表解讀專用樣式 */
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; font-family: monospace; font-size: 1.1em;}
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; font-weight: bold;}
         .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
         .level-title { font-weight: bold; color: #922b21; border-bottom: 1px solid #e6b0aa; padding-bottom: 5px; margin-top: 15px; }
+        
+        /* 圖解符號表樣式 */
+        .legend-box { display: flex; gap: 15px; flex-wrap: wrap; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
     </style>
 </head>
 <body>
 
-    <a href="index.html" class="nav-back">← 返回 HLM 10 階藍圖</a>
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
 
-    <h1>🏢 Level 2: 隨機斜率與跨層次交互作用 (Random Slopes & Cross-level Interaction)</h1>
-    <p><strong>研究目的：</strong>(1) 探討社經地位(SES)對數學(MATH)的影響力，是否在不同班級間有所不同（隨機斜率）。(2) 老師的教學年資(T_EXP)能否解釋這種影響力的差異？也就是說，資深老師帶的班，SES 的影響會不會變小（跨層次交互作用）？</p>
+    <h1>🏢 Level 2: 隨機斜率與跨層次交互作用 (Random Slopes & Cross-level Interaction)</h1>    
+    
+    <div class="step-container">
+        <h2>🧠 原理與應用 (Principle & Application)</h2>
+        
+        <h3>1. 為什麼需要「隨機斜率」？</h3>
+        <p>在 Level 1 模型中，我們假設所有班級的「起跑點（截距）」不同，但「家庭背景(SES)對成績的影響力（斜率）」在所有班級中都是一樣的（平行線）。但現實中，<strong>某些班級的資源分配可能更公平，導致 SES 的影響力較弱；而某些班級可能「富者越富」，導致 SES 影響力極大</strong>。打破平行線假設，允許各組斜率自由變動，這就是「隨機斜率 (Random Slope)」。</p>
+
+        <h3>2. 什麼是「跨層次交互作用 (Cross-level Interaction)」？</h3>
+        <p>當我們確認了「不同班級的斜率確實不一樣」之後，下一個科學問題就是：<strong>「為什麼會不一樣？」</strong><br>這時我們引入 Level 2 的變數（例如：老師的教學年資 T_EXP）來預測這個 Level 1 的斜率變異。這在概念上等同於「調節效應 (Moderation)」，只不過調節變項在 Level 2，自變項在 Level 1，所以稱為「跨層次交互作用」。</p>
+
+        <h3>3. 應用何處？</h3>
+        <p>隨機斜率模型專門用於尋找<strong>「能緩衝或增強個體層次影響的環境因素」</strong>。常見應用包含：</p>
+        <ul>
+            <li><strong>教育研究 (如本例)：</strong>資深老師 (L2調節) 是否能彌補學生家庭背景 (L1自變數) 造成的成績落差？如果資深老師帶領的班級，SES 對成績的預測力變弱了，這就證明了教育介入的價值。</li>
+            <li><strong>組織行為學：</strong>探討「主管的支持型領導 (L2調節)」能否減緩員工「工作負荷 (L1自變數)」對「職業倦怠 (L1依變數)」的負面衝擊。</li>
+            <li><strong>醫學研究：</strong>探討不同醫院的「設備等級 (L2調節)」是否會改變患者「本身病史嚴重度 (L1自變數)」與「致死率 (L1依變數)」之間的關係。</li>
+        </ul>
+    </div>
+
+    <div class="step-container">
+        <h2>📊 模型概念與路徑圖 (Path Diagram)</h2>
+        <p>在 Level 2 模型中，你會看到 Level 1 預測路徑上的黑點被抽成了一個名為 <strong>S</strong> 的新潛在變數，並接受 Level 2 變數的預測。這就是跨層次交互作用的視覺化：</p>
+        
+        <svg viewBox="0 0 700 450" style="background:#fff; border-radius:8px; border:1px solid #ccc; width:100%; height:auto; display:block; margin:0 auto;">
+            <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#333" />
+                </marker>
+            </defs>
+            
+            <line x1="50" y1="225" x2="650" y2="225" stroke="#95a5a6" stroke-width="2" stroke-dasharray="8,8" />
+            <text x="60" y="215" font-size="16" fill="#7f8c8d" font-weight="bold">Between Level (Level 2: 班級層次)</text>
+            <text x="60" y="245" font-size="16" fill="#7f8c8d" font-weight="bold">Within Level (Level 1: 學生層次)</text>
+
+            <rect x="70" y="80" width="100" height="60" rx="4" fill="#e8f8f5" stroke="#1abc9c" stroke-width="2" />
+            <text x="120" y="115" text-anchor="middle" font-size="16" font-weight="bold" fill="#16a085">T_EXP</text>
+
+            <circle cx="330" cy="110" r="45" fill="#f4ecf7" stroke="#8e44ad" stroke-width="2" />
+            <text x="330" y="115" text-anchor="middle" font-size="20" font-weight="bold" fill="#8e44ad">S</text>
+            <text x="330" y="175" text-anchor="middle" font-size="13" fill="#555">(SES對成績的斜率)</text>
+
+            <circle cx="530" cy="110" r="45" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
+            <text x="530" y="115" text-anchor="middle" font-size="18" font-weight="bold" fill="#d35400">MATH</text>
+            <text x="530" y="175" text-anchor="middle" font-size="13" fill="#555">(班級平均成績)</text>
+
+            <line x1="170" y1="110" x2="275" y2="110" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="222" y="100" text-anchor="middle" font-size="14" fill="#c0392b" font-family="monospace">S ON t_exp;</text>
+
+            <path d="M 140 80 Q 330 -10 495 85" fill="transparent" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="330" y="30" text-anchor="middle" font-size="14" fill="#c0392b" font-family="monospace">math ON t_exp;</text>
+
+            <rect x="150" y="300" width="100" height="60" rx="4" fill="#eaf2f8" stroke="#3498db" stroke-width="2" />
+            <text x="200" y="335" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">SES</text>
+
+            <rect x="480" y="300" width="100" height="60" rx="4" fill="#eaf2f8" stroke="#3498db" stroke-width="2" />
+            <text x="530" y="335" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">MATH</text>
+
+            <line x1="250" y1="330" x2="470" y2="330" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            
+            <circle cx="330" cy="330" r="6" fill="#2c3e50" />
+            <circle cx="530" cy="300" r="6" fill="#2c3e50" />
+            
+            <line x1="330" y1="324" x2="330" y2="165" stroke="#8e44ad" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+            <text x="340" y="250" font-size="14" fill="#8e44ad">S | math ON ses;</text>
+            
+            <line x1="530" y1="294" x2="530" y2="165" stroke="#e67e22" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+        </svg>
+
+        <div class="legend-box">
+            <div class="legend-item">
+                <svg width="24" height="16"><rect width="24" height="16" fill="white" stroke="#3498db" stroke-width="2"/></svg>
+                <span><strong>矩形：</strong>觀察變項 (Observed Variables)。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="white" stroke="#8e44ad" stroke-width="2"/></svg>
+                <span><strong>圓形：</strong>潛在變項。此處的 S 代表被抽離出來的「隨機斜率」。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="24" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/></svg>
+                <span><strong>實線箭頭：</strong>實質的預測關係 (ON)。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="20" height="20"><circle cx="10" cy="10" r="4" fill="#2c3e50"/></svg>
+                <span><strong>黑點與虛線：</strong>表示該路徑(斜率)或變數(截距)是隨機的，並被「定義 ( | )」為上層的變數。</span>
+            </div>
+        </div>
+    </div>
+
+    <p><strong>研究目的實作：</strong>(1) 探討社經地位(SES)對數學(MATH)的影響力，是否在不同班級間有所不同（隨機斜率）。(2) 老師的教學年資(T_EXP)能否解釋這種影響力的差異？也就是說，資深老師帶的班，SES 的影響會不會變小（跨層次交互作用）？</p>
 
     <div class="step-container">
         <h2>📦 Step 1: 下載資料檔 (hlm2data.dat)</h2>
@@ -53,21 +146,21 @@ VARIABLE:
   BETWEEN ARE t_exp;    
 
 ANALYSIS: 
-  TYPE IS TWOLEVEL RANDOM;  ! 注意這裡多了 RANDOM
+  TYPE IS TWOLEVEL RANDOM;  ! 注意：要開啟隨機斜率，必須加上 RANDOM 參數
 
 MODEL: 
   %WITHIN%
-  S | math ON ses;  ! 定義 SES 對 Math 的斜率為隨機變數 S
+  S | math ON ses;  ! 定義 SES 對 Math 的斜率為一個名為 S 的隨機變數
 
   %BETWEEN%
-  math ON t_exp;    ! 預測截距 (班級平均成績)
-  S ON t_exp;       ! 預測斜率 (跨層次交互作用！)</pre>
+  math ON t_exp;    ! 預測截距 (班級平均成績被年資預測)
+  S ON t_exp;       ! 預測斜率 (跨層次交互作用：年資調節SES的影響力)</pre>
         <button class="btn" onclick="downloadFile('hlm2_model.inp', 'inpContent', 'msg2')">⬇️ 下載 hlm2_model.inp</button>
         <span id="msg2" class="success-msg">✅ 下載成功！</span>
     </div>
 
     <div class="step-container">
-        <h2>🏃 Step 3: 報表重點解讀</h2>
+        <h2>🏃 Step 3: HLM 報表解讀 (跨層次交互作用)</h2>
         <p>這次我們要注意 <code>TYPE IS TWOLEVEL RANDOM</code> 產生的 <code>S</code> (斜率變數) 的分析結果：</p>
         
         <pre>
@@ -85,10 +178,10 @@ MODEL RESULTS
         <div class="explanation-box">
             <h3>💡 報表白話文翻譯：</h3>
             <div class="level-title">1. S 的變異數 (Variances of S)</div>
-            <p>在 Between 層次看到 S 的 Variance <span class="highlight-green">P-value = 0.016 (< 0.05)</span>。這代表每個班級「SES 對數學的影響力 (斜率)」確實不一樣！有些班級影響很大，有些班級影響很小，我們成功驗證了<strong>隨機斜率</strong>的存在。</p>
+            <p>在 Between 層次看到 S 的 Variance <span class="highlight-green">P-value = 0.016 (< 0.05)</span>。這代表每個班級「SES 對數學的影響力 (斜率)」確實不一樣！有些班級影響很大，有些班級影響很小，我們成功驗證了<strong>「隨機斜率」</strong>的存在，這也是後續能做跨層次調節的前提。</p>
 
             <div class="level-title">2. 跨層次交互作用 (S ON T_EXP)</div>
-            <p>看 <code>S ON T_EXP</code> 的結果，Estimate 是 <span class="highlight-yellow">-0.150</span> 且 <span class="highlight-green">顯著 (p = 0.003)</span>。這意思是：老師年資 (T_EXP) 每增加一年，SES 對數學的影響力 (S) 就會<strong>下降</strong> 0.150。也就是說，資深老師能有效彌補學生家庭背景的差距！</p>
+            <p>看 <code>S ON T_EXP</code> 的結果，Estimate 是 <span class="highlight-yellow">-0.150</span> 且 <span class="highlight-green">顯著 (p = 0.003)</span>。這意思是：老師年資 (T_EXP) 每增加一年，SES 對數學的影響力 (S) 就會<strong>下降</strong> 0.150。也就是說，在越資深的老師帶領的班級裡，學生家庭背景的影響力就越小（資深老師成功彌補了學生的先天劣勢）！</p>
         </div>
     </div>
 

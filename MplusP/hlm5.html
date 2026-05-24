@@ -5,22 +5,140 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mplus 教學 - Level 5 多層次驗證性因素分析 (MCFA)</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; }
         h1 { color: #c0392b; }
         .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
         .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
         pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
         .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
         .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        
+        /* 報表解讀專用樣式 */
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; font-family: monospace; font-size: 1.1em;}
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; font-weight: bold;}
         .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
+        .level-title { font-weight: bold; color: #922b21; border-bottom: 1px solid #e6b0aa; padding-bottom: 5px; margin-top: 15px; }
+        
+        /* 圖解符號表樣式 */
+        .legend-box { display: flex; gap: 15px; flex-wrap: wrap; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
     </style>
 </head>
 <body>
 
-    <a href="index.html" class="nav-back">← 返回 HLM 10 階藍圖</a>
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
 
-    <h1>🏢 Level 5: 多層次驗證性因素分析 (MCFA)</h1>
-    <p><strong>研究目的：</strong>我們測量了 4 題「班級氣氛 (y1-y4)」。我們需要透過 MCFA 確認這 4 題在學生個人層次 (Within) 與班級整體層次 (Between) 是否都能良好地萃取出「班級氣氛 (Climate)」這個潛在變項。</p>
+    <h1>🏢 Level 5: 多層次驗證性因素分析 (Multilevel CFA)</h1>    
+    
+    <div class="step-container">
+        <h2>🧠 原理與應用 (Principle & Application)</h2>
+        
+        <h3>1. 為什麼要做「多層次」的 CFA？</h3>
+        <p>在傳統的 CFA 中，我們確認一組問卷題目能否反映一個潛在變項（例如：4 題測量「班級氣氛」）。但當資料有巢狀結構時（學生在班級中），這 4 題的變異其實來自兩個來源：<strong>「學生個人感受的差異」</strong> 與 <strong>「班級整體客觀環境的差異」</strong>。MCFA 允許我們將這兩個層次的變異徹底分開，分別萃取潛在變數。</p>
+
+        <h3>2. 核心檢驗目標：同構型 (Isomorphism) 與 測量恆等性</h3>
+        <p>MCFA 幫助我們回答一個深刻的問題：「一個概念在個人層次和群體層次，意義是一樣的嗎？」例如，「個人覺得班上氣氛好 (Level 1)」和「全班平均覺得氣氛好 (Level 2)」，這兩個潛在變數的組成結構是否一致？如果一致，我們才能放心地將這個潛在變數用於後續的多層次結構方程模型 (MSEM)。</p>
+
+        <h3>3. 應用何處？</h3>
+        <p>MCFA 是所有多層次量表發展與進階模型建構的必經之路：</p>
+        <ul>
+            <li><strong>量表發展與驗證 (如本例)：</strong>確認新開發的「班級氣氛量表」是否在個體 (學生) 與總體 (班級) 層次都具有良好的信效度。</li>
+            <li><strong>組織氣候研究：</strong>測量「團隊心理安全感」，確認員工個人的安全感認知 (L1) 與團隊整體的安全感氛圍 (L2) 是否為同一個構念。</li>
+            <li><strong>多層次結構方程 (MSEM) 的前置作業：</strong>在跑複雜的跨層次潛在變數中介/調節之前，必須先透過 MCFA 確認測量模型是收斂的。</li>
+        </ul>
+    </div>
+
+    <div class="step-container">
+        <h2>📊 模型概念與路徑圖 (Path Diagram)</h2>
+        <p>這張圖展示了 MCFA 的核心魔法：Mplus 將每一個觀察題目 ($y_1$ 到 $y_4$) 的變異，向上抽取出「班級平均的隨機截距」，然後在兩個層次分別用潛在因子 ($F_W$ 與 $F_B$) 去解釋它們。</p>
+        
+        <svg viewBox="0 0 700 500" style="background:#fff; border-radius:8px; border:1px solid #ccc; width:100%; height:auto; display:block; margin:0 auto;">
+            <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#333" />
+                </marker>
+            </defs>
+            
+            <line x1="50" y1="250" x2="650" y2="250" stroke="#95a5a6" stroke-width="2" stroke-dasharray="8,8" />
+            <text x="60" y="240" font-size="16" fill="#7f8c8d" font-weight="bold">Between Level (Level 2: 班級層次)</text>
+            <text x="60" y="270" font-size="16" fill="#7f8c8d" font-weight="bold">Within Level (Level 1: 學生層次)</text>
+
+            <ellipse cx="350" cy="70" rx="60" ry="40" fill="#f4ecf7" stroke="#8e44ad" stroke-width="2" />
+            <text x="350" y="75" text-anchor="middle" font-size="18" font-weight="bold" fill="#8e44ad">F_B</text>
+
+            <circle cx="150" cy="180" r="25" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
+            <text x="150" y="185" text-anchor="middle" font-size="14" font-weight="bold" fill="#d35400">y1_b</text>
+
+            <circle cx="280" cy="180" r="25" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
+            <text x="280" y="185" text-anchor="middle" font-size="14" font-weight="bold" fill="#d35400">y2_b</text>
+
+            <circle cx="420" cy="180" r="25" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
+            <text x="420" y="185" text-anchor="middle" font-size="14" font-weight="bold" fill="#d35400">y3_b</text>
+
+            <circle cx="550" cy="180" r="25" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
+            <text x="550" y="185" text-anchor="middle" font-size="14" font-weight="bold" fill="#d35400">y4_b</text>
+
+            <line x1="320" y1="105" x2="165" y2="160" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <line x1="335" y1="110" x2="295" y2="155" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <line x1="365" y1="110" x2="405" y2="155" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <line x1="380" y1="105" x2="535" y2="160" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            
+            <text x="480" y="120" font-size="14" fill="#c0392b" font-family="monospace">f_b BY y1-y4;</text>
+
+            <ellipse cx="350" cy="430" rx="60" ry="40" fill="#eaf2f8" stroke="#2980b9" stroke-width="2" />
+            <text x="350" y="435" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">F_W</text>
+
+            <rect x="120" y="320" width="60" height="40" rx="4" fill="#fff" stroke="#3498db" stroke-width="2" />
+            <text x="150" y="345" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">y1</text>
+
+            <rect x="250" y="320" width="60" height="40" rx="4" fill="#fff" stroke="#3498db" stroke-width="2" />
+            <text x="280" y="345" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">y2</text>
+
+            <rect x="390" y="320" width="60" height="40" rx="4" fill="#fff" stroke="#3498db" stroke-width="2" />
+            <text x="420" y="345" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">y3</text>
+
+            <rect x="520" y="320" width="60" height="40" rx="4" fill="#fff" stroke="#3498db" stroke-width="2" />
+            <text x="550" y="345" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">y4</text>
+
+            <line x1="320" y1="395" x2="165" y2="360" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <line x1="335" y1="390" x2="295" y2="360" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <line x1="365" y1="390" x2="405" y2="360" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <line x1="380" y1="395" x2="535" y2="360" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            
+            <text x="480" y="410" font-size="14" fill="#c0392b" font-family="monospace">f_w BY y1-y4;</text>
+
+            <circle cx="150" cy="320" r="5" fill="#2c3e50" />
+            <circle cx="280" cy="320" r="5" fill="#2c3e50" />
+            <circle cx="420" cy="320" r="5" fill="#2c3e50" />
+            <circle cx="550" cy="320" r="5" fill="#2c3e50" />
+            
+            <line x1="150" y1="315" x2="150" y2="205" stroke="#e67e22" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+            <line x1="280" y1="315" x2="280" y2="205" stroke="#e67e22" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+            <line x1="420" y1="315" x2="420" y2="205" stroke="#e67e22" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+            <line x1="550" y1="315" x2="550" y2="205" stroke="#e67e22" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+        </svg>
+
+        <div class="legend-box">
+            <div class="legend-item">
+                <svg width="24" height="16"><rect width="24" height="16" fill="white" stroke="#3498db" stroke-width="2"/></svg>
+                <span><strong>矩形：</strong>我們真實收集到的問卷題目 (y1-y4)。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="24" height="16"><ellipse cx="12" cy="8" rx="12" ry="8" fill="white" stroke="#8e44ad" stroke-width="2"/></svg>
+                <span><strong>大橢圓：</strong>潛在因子 (Latent Factor)，無法直接觀察，由題目共同萃取而出。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="24" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/></svg>
+                <span><strong>實線箭頭 (BY)：</strong>因素負荷量 (Factor Loadings)。表示潛在變數反映在題目上的程度。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="white" stroke="#e67e22" stroke-width="2"/></svg>
+                <span><strong>橘色小圓：</strong>由原題目萃取出的「班級層次隨機截距」，成為 Level 2 的專屬指標。</span>
+            </div>
+        </div>
+    </div>
+
+    <p><strong>研究目的實作：</strong>我們測量了 4 題「班級氣氛 (y1-y4)」。我們需要透過 MCFA 確認這 4 題在學生個人層次 (Within) 與班級整體層次 (Between) 是否都能良好地萃取出「班級氣氛 (Climate)」這個潛在變項。</p>
 
     <div class="step-container">
         <h2>📦 Step 1: 下載資料檔 (hlm5data.dat)</h2>
@@ -39,6 +157,7 @@
 
     <div class="step-container">
         <h2>📝 Step 2: 語法檔核心 (hlm5_mcfa.inp)</h2>
+        <p>在 Mplus 中，我們使用 <code>BY</code> (Measured By) 指令來宣告哪些題目隸屬於哪個潛在變數。</p>
         <pre id="inpContent">TITLE: Multilevel CFA;
 DATA: FILE IS hlm5data.dat;
 VARIABLE: 
@@ -51,11 +170,11 @@ ANALYSIS:
 
 MODEL: 
   %WITHIN%
-  ! 建立第一層的潛在變項 F_W
+  ! 建立第一層的潛在變項 F_W (代表學生個人感受到的氣氛)
   F_W BY y1 y2 y3 y4;  
 
   %BETWEEN%
-  ! 建立第二層的潛在變項 F_B
+  ! 建立第二層的潛在變項 F_B (代表全班整體的客觀氣氛)
   F_B BY y1 y2 y3 y4;  
 
 OUTPUT: STANDARDIZED MODINDICES;</pre>
@@ -64,11 +183,24 @@ OUTPUT: STANDARDIZED MODINDICES;</pre>
     </div>
 
     <div class="step-container">
-        <h2>🏃 Step 3: 報表解讀重點：ICC (組內相關係數)</h2>
+        <h2>🏃 Step 3: 報表解讀重點</h2>
+        
+        <h3>1. 檢視 ICC (組內相關係數)</h3>
         <p>在做 MCFA 之前，報表會先吐出各題目的 <strong>Intraclass Correlation (ICC)</strong>：</p>
+        
+        $$ ICC = \frac{\sigma^2_{Between}}{\sigma^2_{Between} + \sigma^2_{Within}} $$
+        
         <div class="explanation-box">
             <p><strong>ICC 的意義：</strong>ICC 代表「組間變異佔總變異的比例」。一般來說，如果題目的 ICC <strong>大於 0.05 (甚至 0.10)</strong>，代表班級與班級之間的差異夠大，這個資料才「值得」用多層次模型 (TWOLEVEL) 去做分析；如果 ICC 趨近於 0，代表班級之間沒什麼差別，直接用一般的 CFA 就可以了。</p>
         </div>
+
+        <h3>2. 檢視因素負荷量 (Factor Loadings) 與模型配適度</h3>
+        <p>因為我們加了 <code>STANDARDIZED</code>，請滑到報表的 <strong>STANDARDIZED MODEL RESULTS</strong> 區塊：</p>
+        <ul>
+            <li><strong>Within Level Loadings：</strong>確認 y1 到 y4 在 $F_W$ 上的標準化負荷量是否都大於 0.4 (或 0.5) 且達到顯著。這證明在個人層次題目具備收斂效度。</li>
+            <li><strong>Between Level Loadings：</strong>確認 y1 到 y4 在 $F_B$ 上的標準化負荷量。通常群體層次的負荷量會比個體層次<strong>更高</strong>，因為群體平均值已經去除了個人的隨機誤差。</li>
+            <li><strong>Model Fit (配適度指標)：</strong>查看 CFI、TLI (建議 > 0.90) 以及 RMSEA (建議 < 0.08)。如果配適度良好，恭喜你！這代表這個量表在兩個層次的測量結構都是成立的！</li>
+        </ul>
     </div>
 
     <script>

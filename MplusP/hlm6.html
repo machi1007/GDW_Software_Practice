@@ -5,22 +5,169 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mplus 教學 - Level 6 多層次結構方程模型 (MSEM)</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; }
         h1 { color: #c0392b; }
         .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
         .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
         pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
         .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
         .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        
+        /* 報表解讀專用樣式 */
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; font-family: monospace; font-size: 1.1em;}
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; font-weight: bold;}
         .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
+        .level-title { font-weight: bold; color: #922b21; border-bottom: 1px solid #e6b0aa; padding-bottom: 5px; margin-top: 15px; }
+        
+        /* 圖解符號表樣式 */
+        .legend-box { display: flex; gap: 15px; flex-wrap: wrap; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
     </style>
 </head>
 <body>
 
-    <a href="index.html" class="nav-back">← 返回 HLM 10 階藍圖</a>
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
 
-    <h1>🏢 Level 6: 多層次結構方程模型 (MSEM)</h1>
-    <p><strong>研究目的：</strong>我們現在有兩個潛在變項：學習動機 (題項 y1-y3) 與 學習投入 (題項 y4-y6)。我們想看在學生層次與班級層次，「動機」是否都能預測「投入」。</p>
+    <h1>🏢 Level 6: 多層次結構方程模型 (Multilevel SEM)</h1>    
+    
+    <div class="step-container">
+        <h2>🧠 原理與應用 (Principle & Application)</h2>
+        
+        <h3>1. 為什麼要晉升到 MSEM？</h3>
+        <p>傳統的 HLM 只能處理「觀察變數 (Observed Variables)」的運算（例如直接把問卷題目加總取平均）。但社會科學的概念通常無法完美測量。MSEM 的偉大之處在於它允許我們保留題目測量時的<strong>測量誤差 (Measurement Error)</strong>。</p>
+        <p>透過在 Level 1 (個體) 和 Level 2 (群體) 都建立「潛在變項 (Latent Variables)」，MSEM 估計出來的路徑係數會比傳統 HLM 更加純粹與準確，因為它徹底排除了測量誤差的干擾！</p>
+
+        <h3>2. 測量模型 (CFA) ＋ 結構模型 (Path) 的終極合體</h3>
+        <p>MSEM 其實就是 Level 4 與 Level 5 的結合：</p>
+        <ul>
+            <li><strong>測量模型：</strong>先確認觀察題目 (y1-y6) 能否在兩個層次良好地反映出潛在構念 (如動機與投入)。</li>
+            <li><strong>結構模型：</strong>再檢定潛在構念之間的因果/預測關係。</li>
+        </ul>
+
+        <h3>3. 應用何處？</h3>
+        <p>當研究涉及<strong>「抽象的心理構念」</strong>與<strong>「多層次結構」</strong>時，MSEM 是目前的黃金標準：</p>
+        <ul>
+            <li><strong>教育心理學 (如本例)：</strong>在學生與班級兩個層次，探討「潛在學習動機」如何預測「潛在學習投入」。</li>
+            <li><strong>組織行為學：</strong>探討「團隊凝聚力 (潛在變項)」是否會影響「員工離職傾向 (潛在變項)」，並分析這是個人感受造成的，還是團隊整體氛圍造成的。</li>
+        </ul>
+    </div>
+
+    <div class="step-container">
+        <h2>📊 模型概念與路徑圖 (Path Diagram)</h2>
+        <p>這張圖展示了 MSEM 的完整架構。請注意圖中的<strong>粗體紅色箭頭 (ON)</strong>，這代表了潛在變項之間實質的預測關係，也是本研究最關心的核心假設。</p>
+        
+        <svg viewBox="0 0 700 550" style="background:#fff; border-radius:8px; border:1px solid #ccc; width:100%; height:auto; display:block; margin:0 auto;">
+            <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#333" />
+                </marker>
+                <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#c0392b" />
+                </marker>
+            </defs>
+            
+            <line x1="50" y1="280" x2="650" y2="280" stroke="#95a5a6" stroke-width="2" stroke-dasharray="8,8" />
+            <text x="60" y="270" font-size="16" fill="#7f8c8d" font-weight="bold">Between Level (Level 2: 班級層次)</text>
+            <text x="60" y="300" font-size="16" fill="#7f8c8d" font-weight="bold">Within Level (Level 1: 學生層次)</text>
+
+            <ellipse cx="200" cy="70" rx="70" ry="40" fill="#f4ecf7" stroke="#8e44ad" stroke-width="2" />
+            <text x="200" y="75" text-anchor="middle" font-size="18" font-weight="bold" fill="#8e44ad">MOTIV_B</text>
+
+            <ellipse cx="500" cy="70" rx="70" ry="40" fill="#e8f8f5" stroke="#16a085" stroke-width="2" />
+            <text x="500" y="75" text-anchor="middle" font-size="18" font-weight="bold" fill="#16a085">ENGAG_B</text>
+
+            <line x1="270" y1="70" x2="425" y2="70" stroke="#c0392b" stroke-width="3" marker-end="url(#arrow-red)" />
+            <text x="350" y="60" text-anchor="middle" font-size="14" font-weight="bold" fill="#c0392b">ON</text>
+
+            <circle cx="100" cy="200" r="22" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
+            <text x="100" y="205" text-anchor="middle" font-size="12" font-weight="bold" fill="#d35400">y1_b</text>
+            <circle cx="200" cy="200" r="22" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
+            <text x="200" y="205" text-anchor="middle" font-size="12" font-weight="bold" fill="#d35400">y2_b</text>
+            <circle cx="300" cy="200" r="22" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
+            <text x="300" y="205" text-anchor="middle" font-size="12" font-weight="bold" fill="#d35400">y3_b</text>
+
+            <circle cx="400" cy="200" r="22" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
+            <text x="400" y="205" text-anchor="middle" font-size="12" font-weight="bold" fill="#d35400">y4_b</text>
+            <circle cx="500" cy="200" r="22" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
+            <text x="500" y="205" text-anchor="middle" font-size="12" font-weight="bold" fill="#d35400">y5_b</text>
+            <circle cx="600" cy="200" r="22" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
+            <text x="600" y="205" text-anchor="middle" font-size="12" font-weight="bold" fill="#d35400">y6_b</text>
+
+            <line x1="170" y1="105" x2="110" y2="175" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <line x1="200" y1="110" x2="200" y2="175" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <line x1="230" y1="105" x2="290" y2="175" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+
+            <line x1="470" y1="105" x2="410" y2="175" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <line x1="500" y1="110" x2="500" y2="175" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <line x1="530" y1="105" x2="590" y2="175" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+
+            <ellipse cx="200" cy="480" rx="70" ry="40" fill="#eaf2f8" stroke="#2980b9" stroke-width="2" />
+            <text x="200" y="485" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">MOTIV_W</text>
+
+            <ellipse cx="500" cy="480" rx="70" ry="40" fill="#ebf5fb" stroke="#1abc9c" stroke-width="2" />
+            <text x="500" y="485" text-anchor="middle" font-size="18" font-weight="bold" fill="#1abc9c">ENGAG_W</text>
+
+            <line x1="270" y1="480" x2="425" y2="480" stroke="#c0392b" stroke-width="3" marker-end="url(#arrow-red)" />
+            <text x="350" y="470" text-anchor="middle" font-size="14" font-weight="bold" fill="#c0392b">ON</text>
+
+            <rect x="75" y="360" width="50" height="35" rx="4" fill="#fff" stroke="#3498db" stroke-width="2" />
+            <text x="100" y="383" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">y1</text>
+            <rect x="175" y="360" width="50" height="35" rx="4" fill="#fff" stroke="#3498db" stroke-width="2" />
+            <text x="200" y="383" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">y2</text>
+            <rect x="275" y="360" width="50" height="35" rx="4" fill="#fff" stroke="#3498db" stroke-width="2" />
+            <text x="300" y="383" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">y3</text>
+
+            <rect x="375" y="360" width="50" height="35" rx="4" fill="#fff" stroke="#3498db" stroke-width="2" />
+            <text x="400" y="383" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">y4</text>
+            <rect x="475" y="360" width="50" height="35" rx="4" fill="#fff" stroke="#3498db" stroke-width="2" />
+            <text x="500" y="383" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">y5</text>
+            <rect x="575" y="360" width="50" height="35" rx="4" fill="#fff" stroke="#3498db" stroke-width="2" />
+            <text x="600" y="383" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">y6</text>
+
+            <line x1="170" y1="445" x2="110" y2="400" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <line x1="200" y1="440" x2="200" y2="400" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <line x1="230" y1="445" x2="290" y2="400" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+
+            <line x1="470" y1="445" x2="410" y2="400" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <line x1="500" y1="440" x2="500" y2="400" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <line x1="530" y1="445" x2="590" y2="400" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+
+            <circle cx="100" cy="360" r="5" fill="#2c3e50" />
+            <line x1="100" y1="355" x2="100" y2="225" stroke="#e67e22" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+            <circle cx="200" cy="360" r="5" fill="#2c3e50" />
+            <line x1="200" y1="355" x2="200" y2="225" stroke="#e67e22" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+            <circle cx="300" cy="360" r="5" fill="#2c3e50" />
+            <line x1="300" y1="355" x2="300" y2="225" stroke="#e67e22" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+
+            <circle cx="400" cy="360" r="5" fill="#2c3e50" />
+            <line x1="400" y1="355" x2="400" y2="225" stroke="#e67e22" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+            <circle cx="500" cy="360" r="5" fill="#2c3e50" />
+            <line x1="500" y1="355" x2="500" y2="225" stroke="#e67e22" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+            <circle cx="600" cy="360" r="5" fill="#2c3e50" />
+            <line x1="600" y1="355" x2="600" y2="225" stroke="#e67e22" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+        </svg>
+
+        <div class="legend-box">
+            <div class="legend-item">
+                <svg width="24" height="16"><rect width="24" height="16" fill="white" stroke="#3498db" stroke-width="2"/></svg>
+                <span><strong>矩形：</strong>觀察變數 (題項 y1-y6)。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="24" height="16"><ellipse cx="12" cy="8" rx="12" ry="8" fill="white" stroke="#8e44ad" stroke-width="2"/></svg>
+                <span><strong>大橢圓：</strong>潛在因子 (學習動機、學習投入)。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="24" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/></svg>
+                <span><strong>黑實線箭頭 (BY)：</strong>測量模型 (因素負荷量)。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="24" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="#c0392b" stroke-width="3" marker-end="url(#arrow-red)"/></svg>
+                <span><strong>紅實線箭頭 (ON)：</strong>結構模型 (預測關係)。</span>
+            </div>
+        </div>
+    </div>
+
+    <p><strong>研究目的實作：</strong>我們現在有兩個潛在變項：學習動機 (題項 y1-y3) 與 學習投入 (題項 y4-y6)。我們想看在學生層次與班級層次，「動機」是否都能預測「投入」。</p>
 
     <div class="step-container">
         <h2>📦 Step 1: 下載資料檔 (hlm6data.dat)</h2>
@@ -37,6 +184,7 @@
 
     <div class="step-container">
         <h2>📝 Step 2: 語法檔核心 (hlm6_msem.inp)</h2>
+        <p>語法結構分為 <code>BY</code> (建構潛在變項) 與 <code>ON</code> (建立預測關係) 兩大步驟，且在組內與組間都要宣告：</p>
         <pre id="inpContent">TITLE: Multilevel SEM;
 DATA: FILE IS hlm6data.dat;
 VARIABLE: 
@@ -60,16 +208,36 @@ MODEL:
   MOTIV_B BY y1 y2 y3;
   ENGAG_B BY y4 y5 y6;
   ! 2. 結構模型
-  ENGAG_B ON MOTIV_B;  </pre>
+  ENGAG_B ON MOTIV_B;  
+
+OUTPUT: STANDARDIZED;</pre>
         <button class="btn" onclick="downloadFile('hlm6_msem.inp', 'inpContent', 'msg2')">⬇️ 下載 hlm6_msem.inp</button>
         <span id="msg2" class="success-msg">✅ 下載成功！</span>
     </div>
 
     <div class="step-container">
-        <h2>🏃 Step 3: 核心觀念：為何要用 MSEM？</h2>
+        <h2>🏃 Step 3: 報表解讀重點</h2>
+        
+        <p>在查看輸出報表時，我們關注兩大核心（記得查看 <code>STANDARDIZED MODEL RESULTS</code> 區塊）：</p>
+
+        <pre>
+<strong style="color:#d35400;">Within Level</strong>
+ ENGAG_W    ON
+    MOTIV_W           <span class="highlight-yellow">0.582</span>      0.085      6.847      <span class="highlight-green">0.000</span>
+
+<strong style="color:#d35400;">Between Level</strong>
+ ENGAG_B    ON
+    MOTIV_B           <span class="highlight-yellow">0.820</span>      0.120      6.833      <span class="highlight-green">0.000</span>
+        </pre>
+
         <div class="explanation-box">
-            <p>傳統的 HLM 只能處理「觀察變數 (Observed Variables)」的運算（例如直接把題目加總取平均）。而 MSEM 允許我們保留題目測量時的<strong>測量誤差 (Measurement Error)</strong>。</p>
-            <p>透過在 Level 1 和 Level 2 都建立潛在變項 (Latent Variables)，MSEM 估計出來的路徑係數（例如 <code>ENGAG_B ON MOTIV_B</code>）會比傳統 HLM 更加純粹與準確！</p>
+            <h3>💡 報表白話文翻譯：</h3>
+            <div class="level-title">1. 結構模型顯著性 (ON)</div>
+            <p><strong>Within Level：</strong> <span class="highlight-green">P-value = 0.000</span>，表示在學生個人層次，個人學習動機越高，其學習投入程度顯著越高 (標準化係數 0.582)。</p>
+            <p><strong>Between Level：</strong> <span class="highlight-green">P-value = 0.000</span>，表示在班級整體層次，全班平均學習動機氛圍越強的班級，該班整體的學習投入表現也顯著越高 (標準化係數 0.820，通常群體層次係數會更大，因為排除了個體隨機誤差)。</p>
+
+            <div class="level-title">2. 測量模型檢驗 (BY) 與 配適度指標</div>
+            <p>與 Level 5 相同，你需要確認所有題目在兩個層次的 <code>BY</code> 負荷量是否都大於 0.5 且顯著。同時，檢查整體的 Model Fit (CFI > 0.90, RMSEA < 0.08) 是否達標，這決定了你的潛在變項建構是否成功！</p>
         </div>
     </div>
 

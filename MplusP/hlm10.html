@@ -5,73 +5,210 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mplus 教學 - Level 10 動態結構方程模型 (DSEM)</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; }
         h1 { color: #c0392b; }
         .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
         .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
         pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
         .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
         .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
-        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
+        
+        /* 報表解讀專用樣式 */
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; font-family: monospace; font-size: 1.1em;}
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; font-weight: bold;}
         .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
+        .level-title { font-weight: bold; color: #922b21; border-bottom: 1px solid #e6b0aa; padding-bottom: 5px; margin-top: 15px; }
+        
+        /* 圖解符號表樣式 */
+        .legend-box { display: flex; gap: 15px; flex-wrap: wrap; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
     </style>
 </head>
 <body>
 
-    <a href="index.html" class="nav-back">← 返回 HLM 10 階藍圖</a>
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
 
-    <h1>🏢 Level 10: 動態結構方程模型 (DSEM)</h1>
-    <p><strong>研究目的：</strong>這處理的是經驗取樣法 (ESM/EMA) 的資料。例如：連續測量一位學生 14 天的情緒(Mood)和壓力(Stress)。我們想分析「昨天的壓力」是否會影響「今天的情緒」(自迴歸與交叉延遲效應)，且每個人的影響程度是否不同。</p>
+    <h1>🏢 Level 10: 動態結構方程模型 (Dynamic SEM, DSEM)</h1>    
+    
+    <div class="step-container">
+        <h2>🧠 原理與應用 (Principle & Application)</h2>
+        
+        <h3>1. 什麼是 DSEM？(多層次的終極翻轉)</h3>
+        <p>傳統的 HLM 是將「學生」嵌套在「班級」裡。而 DSEM 是專門用來處理<strong>密集縱貫性資料 (Intensive Longitudinal Data, 如 ESM 經驗取樣法或日記法)</strong> 的。它將「連續測量的時間點 (Level 1)」嵌套在「個人 (Level 2)」裡面。結合了時間序列 (Time-Series) 分析與多層次模型，讓我們能估計微觀時間尺度下的動態變化。</p>
+
+        <h3>2. 核心機制：滯後效應 (Lagged Effects) 與貝氏估計</h3>
+        <p>在 DSEM 中，最經典的指標是 <strong>情緒慣性 (Emotional Inertia, 自我迴歸斜率)</strong> 與 <strong>壓力敏感度 (Reactivity, 交叉延遲斜率)</strong>。我們想知道「昨天 (T-1) 的狀態，如何影響今天 (T) 的狀態」。因為模型極其複雜，Mplus 強制要求 DSEM 必須使用 <strong>貝氏估計法 (Bayesian Estimation)</strong> 來運算。</p>
+
+        <h3>3. 應用何處？</h3>
+        <p>只要你的研究要求受試者「連續填寫很多天的問卷 (通常 10~30 天以上)」，或是「穿戴裝置連續收集的生理訊號」，這就是 DSEM 的主場：</p>
+        <ul>
+            <li><strong>臨床心理學 (如本例)：</strong>探討每個人獨特的「情緒慣性」。慣性太大（昨天的憂鬱高度預測今天的憂鬱，情緒無法隨環境彈性調節）往往是心理疾病的早期警訊。</li>
+            <li><strong>組織行為學：</strong>員工連續填寫 14 天的日記。探討「昨天的工作負荷 (T-1)」如何跨日影響「今天的疲勞度 (T)」，並探討每個人的「復原力 (斜率)」差異。</li>
+            <li><strong>伴侶與家庭研究：</strong>伴侶雙方連續 30 天的互動日記。探討丈夫昨天的情緒如何影響妻子今天的情緒 (人際交叉延遲)。</li>
+        </ul>
+    </div>
+
+    <div class="step-container">
+        <h2>📊 模型概念與路徑圖 (Path Diagram)</h2>
+        <p>在這張圖中，Level 1 呈現了時間序列推移：從 $T-1$ (前一個時間點) 指向 $T$ (當下)。而這些預測關係(斜率)被抽離到 Level 2，成為每個人獨特的個人特質！</p>
+        
+        <svg viewBox="0 0 700 500" style="background:#fff; border-radius:8px; border:1px solid #ccc; width:100%; height:auto; display:block; margin:0 auto;">
+            <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#333" />
+                </marker>
+                <marker id="arrow-start" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 10 0 L 0 5 L 10 10 z" fill="#333" />
+                </marker>
+            </defs>
+            
+            <line x1="50" y1="230" x2="650" y2="230" stroke="#95a5a6" stroke-width="2" stroke-dasharray="8,8" />
+            <text x="60" y="220" font-size="16" fill="#7f8c8d" font-weight="bold">Between Level (Level 2: 個人特質層次)</text>
+            <text x="60" y="250" font-size="16" fill="#7f8c8d" font-weight="bold">Within Level (Level 1: 時間點 T)</text>
+
+            <circle cx="150" cy="80" r="40" fill="#f4ecf7" stroke="#8e44ad" stroke-width="2" />
+            <text x="150" y="85" text-anchor="middle" font-size="18" font-weight="bold" fill="#8e44ad">Phi_M</text>
+            <text x="150" y="135" text-anchor="middle" font-size="12" fill="#555">(情緒慣性斜率)</text>
+
+            <circle cx="300" cy="80" r="40" fill="#e8f8f5" stroke="#16a085" stroke-width="2" />
+            <text x="300" y="85" text-anchor="middle" font-size="18" font-weight="bold" fill="#16a085">Beta_S</text>
+            <text x="300" y="135" text-anchor="middle" font-size="12" fill="#555">(壓力敏感度斜率)</text>
+
+            <circle cx="450" cy="80" r="40" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
+            <text x="450" y="85" text-anchor="middle" font-size="18" font-weight="bold" fill="#d35400">Mood</text>
+            <text x="450" y="135" text-anchor="middle" font-size="12" fill="#555">(個人平均情緒)</text>
+
+            <circle cx="600" cy="80" r="40" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
+            <text x="600" y="85" text-anchor="middle" font-size="18" font-weight="bold" fill="#d35400">Stress</text>
+            <text x="600" y="135" text-anchor="middle" font-size="12" fill="#555">(個人平均壓力)</text>
+
+            <path d="M 185 60 Q 300 20 415 60" fill="transparent" stroke="#333" stroke-width="1.5" stroke-dasharray="4,4" marker-start="url(#arrow-start)" marker-end="url(#arrow)" />
+            <path d="M 335 60 Q 465 20 570 60" fill="transparent" stroke="#333" stroke-width="1.5" stroke-dasharray="4,4" marker-start="url(#arrow-start)" marker-end="url(#arrow)" />
+
+            <rect x="100" y="300" width="80" height="50" rx="4" fill="#eaf2f8" stroke="#2980b9" stroke-width="2" stroke-dasharray="3,3" />
+            <text x="140" y="330" text-anchor="middle" font-size="16" font-weight="bold" fill="#2980b9">Mood&1</text>
+            <text x="140" y="370" text-anchor="middle" font-size="12" fill="#7f8c8d">(昨天情緒)</text>
+
+            <rect x="250" y="300" width="80" height="50" rx="4" fill="#eaf2f8" stroke="#2980b9" stroke-width="2" stroke-dasharray="3,3" />
+            <text x="290" y="330" text-anchor="middle" font-size="16" font-weight="bold" fill="#2980b9">Stress&1</text>
+            <text x="290" y="370" text-anchor="middle" font-size="12" fill="#7f8c8d">(昨天壓力)</text>
+
+            <rect x="430" y="380" width="80" height="50" rx="4" fill="#ebf5fb" stroke="#3498db" stroke-width="2" />
+            <text x="470" y="410" text-anchor="middle" font-size="16" font-weight="bold" fill="#2980b9">Mood</text>
+            <text x="470" y="450" text-anchor="middle" font-size="12" fill="#7f8c8d">(今天情緒)</text>
+
+            <rect x="580" y="380" width="80" height="50" rx="4" fill="#ebf5fb" stroke="#3498db" stroke-width="2" />
+            <text x="620" y="410" text-anchor="middle" font-size="16" font-weight="bold" fill="#2980b9">Stress</text>
+            <text x="620" y="450" text-anchor="middle" font-size="12" fill="#7f8c8d">(今天壓力)</text>
+
+            <line x1="160" y1="350" x2="420" y2="400" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="280" y="405" text-anchor="middle" font-size="14" fill="#c0392b" font-family="monospace">mood ON mood&1;</text>
+            
+            <line x1="310" y1="350" x2="430" y2="385" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="375" y="355" text-anchor="middle" font-size="14" fill="#c0392b" font-family="monospace">mood ON stress&1;</text>
+
+            <circle cx="280" cy="373" r="6" fill="#8e44ad" /> <circle cx="370" cy="370" r="6" fill="#16a085" /> <circle cx="470" cy="380" r="6" fill="#e67e22" /> <circle cx="620" cy="380" r="6" fill="#e67e22" /> <line x1="280" y1="367" x2="150" y2="120" stroke="#8e44ad" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+            <line x1="370" y1="364" x2="300" y2="120" stroke="#16a085" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+            <line x1="470" y1="374" x2="450" y2="120" stroke="#e67e22" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+            <line x1="620" y1="374" x2="600" y2="120" stroke="#e67e22" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+        </svg>
+
+        <div class="legend-box">
+            <div class="legend-item">
+                <svg width="24" height="16"><rect width="24" height="16" fill="white" stroke="#2980b9" stroke-width="2" stroke-dasharray="2,2"/></svg>
+                <span><strong>虛線矩形 (&1)：</strong>滯後變項 (Lagged Variables)，代表前一個時間點(昨天)的狀態。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="24" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/></svg>
+                <span><strong>時間預測箭頭 (ON)：</strong>今天被昨天預測。形成情緒慣性 (AR) 與交叉延遲效應。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="20" height="20"><circle cx="10" cy="10" r="4" fill="#8e44ad"/></svg>
+                <span><strong>黑點與虛線：</strong>表示該「影響力(斜率)」在每個人身上都不一樣，被抽離成為個人特質 (Level 2)。</span>
+            </div>
+        </div>
+    </div>
+
+    <p><strong>研究目的實作：</strong>我們連續 30 天記錄了受試者的「壓力 (stress)」與「憂鬱情緒 (mood)」。我們想探討：昨天的情緒是否會殘留到今天 (情緒慣性 Phi_m)？昨天的壓力是否會導致今天的憂鬱 (壓力敏感度 Beta_s)？每個人在這些特質上是否有所不同？</p>
 
     <div class="step-container">
         <h2>📦 Step 1: 下載資料檔 (hlm10data.dat)</h2>
-        <p>資料格式：學生ID(Level 2), 時間點(Level 1), 情緒分數, 壓力分數</p>
-        <pre id="dataContent">1 1 5 8
-1 2 4 9
-1 3 6 5
-2 1 7 4
-2 2 8 3
-2 3 7 3</pre>
+        <p>資料格式：受試者ID(Level 2), 天數(Time), 壓力分數, 憂鬱情緒分數</p>
+        <pre id="dataContent">1 1 3 4
+1 2 4 5
+1 3 2 3
+1 4 5 6
+2 1 1 2
+2 2 2 2
+2 3 1 1
+2 4 4 3</pre>
         <button class="btn" onclick="downloadFile('hlm10data.dat', 'dataContent', 'msg1')">⬇️ 下載 hlm10data.dat</button>
         <span id="msg1" class="success-msg">✅ 下載成功！</span>
     </div>
 
     <div class="step-container">
         <h2>📝 Step 2: 語法檔核心 (hlm10_dsem.inp)</h2>
+        <p>DSEM 有三個必備的專屬指令：<code>TINTERVAL</code> (定義時間刻度)、<code>LAGGED</code> (宣告落後變數) 以及 <code>ESTIMATOR=BAYES</code>。</p>
         <pre id="inpContent">TITLE: Dynamic SEM (DSEM);
 DATA: FILE IS hlm10data.dat;
 VARIABLE: 
-  NAMES ARE id time mood stress;
-  USEVARIABLES ARE id mood stress;
-  CLUSTER IS id;  ! 注意！在這裡群體變成了「人」
-  TINTERVAL = time(1); ! 宣告時間間隔 (時間序列分析必備)
+  NAMES ARE id time stress mood;
+  USEVARIABLES ARE id time stress mood;
+  CLUSTER IS id;             ! L2 是個人 (id)
+  TINTERVAL = time(1);       ! 【關鍵】宣告時間刻度為1單位(每天)
+  LAGGED = mood(1) stress(1);! 【關鍵】產生落後 1 期的變數 (Mood&1, Stress&1)
 
 ANALYSIS: 
-  TYPE IS TWOLEVEL RANDOM DSEM; 
-  ESTIMATOR = BAYES; ! DSEM 必須使用貝氏估計
+  TYPE IS TWOLEVEL RANDOM; 
+  ESTIMATOR = BAYES;         ! 【關鍵】DSEM 必須使用貝氏估計
+  BITERATIONS = (2000);      ! 建議增加迭代次數確保貝氏收斂
 
-MODEL:
+MODEL: 
   %WITHIN%
-  ! 1. 自迴歸 (Autoregressive): 昨天的情緒影響今天的情緒
-  phi_m | mood ON mood&1;  ! &1 代表滯後一期 (Lag 1)
+  ! 1. 自我迴歸 (Autoregression): 昨天的情緒影響今天
+  ! | 前面是我們幫斜率取的變數名稱 (phi_m 代表慣性)
+  phi_m | mood ON mood&1; 
   
   ! 2. 交叉延遲 (Cross-lagged): 昨天的壓力影響今天的情緒
   beta_s | mood ON stress&1; 
 
   %BETWEEN%
-  ! 分析每個人在「情緒慣性(phi_m)」和「壓力敏感度(beta_s)」上的差異
+  ! 分析每個人在「情緒慣性(phi_m)」和「壓力敏感度(beta_s)」上的特質差異
+  ! 並允許這些特質彼此相關
   mood stress phi_m beta_s WITH mood stress phi_m beta_s;</pre>
         <button class="btn" onclick="downloadFile('hlm10_dsem.inp', 'inpContent', 'msg2')">⬇️ 下載 hlm10_dsem.inp</button>
         <span id="msg2" class="success-msg">✅ 下載成功！</span>
     </div>
 
     <div class="step-container">
-        <h2>🏃 Step 3: DSEM 終極觀念解讀</h2>
+        <h2>🏃 Step 3: DSEM 報表解讀重點</h2>
+        
+        <p>因為使用的是<strong>貝氏估計法 (Bayesian)</strong>，報表不再提供傳統的 P-Value，而是提供 <strong>Posterior S.D. (後驗標準誤)</strong> 以及 <strong>One-Tailed P-Value (單尾 P 值)</strong>。只要 P-Value < 0.05 即可視為顯著。</p>
+        
+        <pre>
+MODEL RESULTS
+                                Posterior  One-Tailed
+                   <span class="highlight-yellow">Estimate</span>       S.D.      <span class="highlight-green">P-Value</span>
+<strong style="color:#d35400;">Between Level</strong>
+
+ Means
+    PHI_M             <span class="highlight-yellow">0.350</span>      0.080      <span class="highlight-green">0.000</span>
+    BETA_S            <span class="highlight-yellow">0.220</span>      0.065      <span class="highlight-green">0.001</span>
+
+ Variances
+    PHI_M             <span class="highlight-yellow">0.120</span>      0.040      <span class="highlight-green">0.002</span>
+    BETA_S            <span class="highlight-yellow">0.095</span>      0.035      <span class="highlight-green">0.004</span>
+        </pre>
+
         <div class="explanation-box">
-            <p><strong>這是多層次模型概念的翻轉！</strong></p>
-            <p>傳統的 HLM 是將「人」包在「班級」裡。<br>
-            而在 DSEM 中，我們是將「連續測量的時間點 (Level 1)」包在「人 (Level 2)」裡面。這讓我們可以算出每一個人專屬的 <strong>「情緒慣性 (慣性越大代表情緒越難平復)」</strong>，並進一步在 Level 2 用其他特質（例如神經質程度）來預測這個情緒慣性。</p>
-            <p>這需要仰賴貝氏估計法 (Bayesian Estimation) 以及龐大的運算資源，是目前追蹤資料分析的最高殿堂！</p>
+            <h3>💡 報表白話文翻譯：</h3>
+            
+            <div class="level-title">1. Means (全體平均動態效應)</div>
+            <p><strong>PHI_M (情緒慣性) = 0.350 (顯著)：</strong>這代表整體而言，受試者有顯著的情緒慣性。昨天的憂鬱情緒每高 1 分，今天的憂鬱情緒就會跟著高 0.350 分（情緒會跨日殘留）。</p>
+            <p><strong>BETA_S (壓力敏感度) = 0.220 (顯著)：</strong>代表昨天的壓力確實會導致今天的憂鬱情緒增加。</p>
+
+            <div class="level-title">2. Variances (個體差異)</div>
+            <p>在貝氏估計中，PHI_M 與 BETA_S 的變異數皆達到顯著 (<span class="highlight-green">p < 0.05</span>)。這是 DSEM 最有價值的發現：<strong>「每個人消化情緒和處理壓力的能力是不一樣的！」</strong> 有些人的情緒慣性很低（睡一覺就好了），有些人慣性極高（情緒會無限堆疊）。一旦找出這些變異，我們未來就能在 Level 2 加入「心理韌性量表」去預測這些動態特質！</p>
         </div>
     </div>
 

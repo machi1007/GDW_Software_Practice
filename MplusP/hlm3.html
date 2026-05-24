@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mplus 教學 - Level 3 多層次中介效應</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; }
         h1 { color: #c0392b; }
         .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
         .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
@@ -13,18 +13,114 @@
         .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
         .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
         
-        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
-        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        /* 報表解讀專用樣式 */
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; font-family: monospace; font-size: 1.1em;}
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; font-weight: bold;}
         .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
         .level-title { font-weight: bold; color: #922b21; border-bottom: 1px solid #e6b0aa; padding-bottom: 5px; margin-top: 15px; }
+        
+        /* 圖解符號表樣式 */
+        .legend-box { display: flex; gap: 15px; flex-wrap: wrap; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
     </style>
 </head>
 <body>
 
-    <a href="index.html" class="nav-back">← 返回 HLM 10 階藍圖</a>
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
 
-    <h1>🏢 Level 3: 多層次中介效應 (Multilevel Mediation 1-1-1)</h1>
-    <p><strong>研究目的：</strong>學生的社經地位(SES)是否會透過提升「學習動機(MOTIV)」，進而提高「數學成績(MATH)」？我們需要在個體層次(Within)和班級層次(Between)同時檢定這個中介路徑。</p>
+    <h1>🏢 Level 3: 多層次中介效應 (Multilevel Mediation 1-1-1)</h1>    
+    
+    <div class="step-container">
+        <h2>🧠 原理與應用 (Principle & Application)</h2>
+        
+        <h3>1. 什麼是「1-1-1 多層次中介模型」？</h3>
+        <p>在傳統的中介模型中，我們探討自變項 (X) 透過中介變項 (M) 影響依變項 (Y)。當資料具有巢狀結構時，如果 X、M、Y 這三個變數都是在<strong>個體層次 (Level 1)</strong> 測量的，這就稱為 <strong>1-1-1 模型</strong>（例如：學生的社經地位 $\rightarrow$ 學生的學習動機 $\rightarrow$ 學生的數學成績）。</p>
+
+        <h3>2. 為什麼不能直接用傳統的 Process 跑？(Mplus 的魔法拆解)</h3>
+        <p>如果你無視班級差異直接跑傳統中介，會造成嚴重的估計偏差。在 Mplus 中，如果一個變數（如動機或成績）<strong>沒有被宣告在 <code>WITHIN ARE</code> 或 <code>BETWEEN ARE</code> 裡面</strong>，Mplus 會自動施展魔法：把它拆解成「組內變異 (個人跟班級平均的落差)」與「組間變異 (班級平均與總平均的落差)」。這允許我們在控制了班級氛圍的前提下，純粹檢驗「個人心理機制」的中介效應。</p>
+
+        <h3>3. 應用何處？</h3>
+        <p>多層次中介模型廣泛應用於需要「排除群體干擾，確認個體真實心理歷程」的研究：</p>
+        <ul>
+            <li><strong>教育心理學 (如本例)：</strong>排除「明星班 vs 普通班」的班級競爭力差異後，確認「社經地位較高」的學生，是否確實因為「學習動機較強」，進而獲得「更好的數學成績」？</li>
+            <li><strong>密集追蹤研究 (日誌法 ESM)：</strong>每天的資料 (Level 1) 嵌套於個人 (Level 2)。探討員工「今天的睡眠品質」是否透過「今天的情緒狀態」影響「今天的工作績效」。</li>
+            <li><strong>組織行為學：</strong>員工 (Level 1) 嵌套於部門 (Level 2)。探討「個人工作壓力」是否透過「職業倦怠」導致「離職傾向」。</li>
+        </ul>
+    </div>
+
+    <div class="step-container">
+        <h2>📊 模型概念與路徑圖 (Path Diagram)</h2>
+        <p>在此模型中，因為 <code>SES</code> 被宣告為 purely Within (只在個體層次變動)，所以 Level 2 沒有 SES。而 <code>MOTIV</code> 和 <code>MATH</code> 沒有被特別宣告，因此被 Mplus 自動拆解，同時出現在上下兩個層次中：</p>
+        
+        <svg viewBox="0 0 700 450" style="background:#fff; border-radius:8px; border:1px solid #ccc; width:100%; height:auto; display:block; margin:0 auto;">
+            <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#333" />
+                </marker>
+            </defs>
+            
+            <line x1="50" y1="225" x2="650" y2="225" stroke="#95a5a6" stroke-width="2" stroke-dasharray="8,8" />
+            <text x="60" y="215" font-size="16" fill="#7f8c8d" font-weight="bold">Between Level (Level 2: 班級層次)</text>
+            <text x="60" y="245" font-size="16" fill="#7f8c8d" font-weight="bold">Within Level (Level 1: 學生層次)</text>
+
+            <circle cx="350" cy="110" r="45" fill="#f4ecf7" stroke="#8e44ad" stroke-width="2" />
+            <text x="350" y="115" text-anchor="middle" font-size="18" font-weight="bold" fill="#8e44ad">MOTIV</text>
+            <text x="350" y="175" text-anchor="middle" font-size="13" fill="#555">(各班平均動機)</text>
+
+            <circle cx="550" cy="110" r="45" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
+            <text x="550" y="115" text-anchor="middle" font-size="18" font-weight="bold" fill="#d35400">MATH</text>
+            <text x="550" y="175" text-anchor="middle" font-size="13" fill="#555">(各班平均成績)</text>
+
+            <line x1="395" y1="110" x2="495" y2="110" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="445" y="100" text-anchor="middle" font-size="14" fill="#c0392b" font-family="monospace">math ON motiv;</text>
+
+            <rect x="100" y="300" width="100" height="60" rx="4" fill="#eaf2f8" stroke="#3498db" stroke-width="2" />
+            <text x="150" y="335" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">SES</text>
+
+            <rect x="300" y="300" width="100" height="60" rx="4" fill="#eaf2f8" stroke="#3498db" stroke-width="2" />
+            <text x="350" y="335" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">MOTIV</text>
+
+            <rect x="500" y="300" width="100" height="60" rx="4" fill="#eaf2f8" stroke="#3498db" stroke-width="2" />
+            <text x="550" y="335" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">MATH</text>
+
+            <line x1="200" y1="330" x2="290" y2="330" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="245" y="320" text-anchor="middle" font-size="14" fill="#c0392b" font-family="monospace">motiv ON ses;</text>
+
+            <line x1="400" y1="330" x2="490" y2="330" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            
+            <path d="M 150 360 Q 350 430 550 360" fill="transparent" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="350" y="415" text-anchor="middle" font-size="14" fill="#c0392b" font-family="monospace">math ON ses;</text>
+            
+            <text x="450" y="320" text-anchor="middle" font-size="14" fill="#c0392b" font-family="monospace">math ON motiv;</text>
+
+            <circle cx="350" cy="300" r="6" fill="#2c3e50" />
+            <circle cx="550" cy="300" r="6" fill="#2c3e50" />
+            
+            <line x1="350" y1="294" x2="350" y2="165" stroke="#8e44ad" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+            <line x1="550" y1="294" x2="550" y2="165" stroke="#e67e22" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+        </svg>
+
+        <div class="legend-box">
+            <div class="legend-item">
+                <svg width="24" height="16"><rect width="24" height="16" fill="white" stroke="#3498db" stroke-width="2"/></svg>
+                <span><strong>矩形：</strong>觀察變項 (Observed Variables)。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="white" stroke="#e67e22" stroke-width="2"/></svg>
+                <span><strong>圓形：</strong>潛在變項。此處代表被 Mplus 自動萃取出來的「班級層次平均值」。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="24" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/></svg>
+                <span><strong>實線箭頭：</strong>因果預測路徑 (ON)。我們同時檢驗了 X→M、M→Y 與 X→Y 三條路徑。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="20" height="20"><circle cx="10" cy="10" r="4" fill="#2c3e50"/></svg>
+                <span><strong>黑點與虛線：</strong>表示該變數的截距（均值）是隨機的，向上抽離並構成 Level 2 的變數。</span>
+            </div>
+        </div>
+    </div>
+
+    <p><strong>研究目的實作：</strong>學生的社經地位(SES)是否會透過提升「學習動機(MOTIV)」，進而提高「數學成績(MATH)」？我們需要在個體層次(Within)和班級層次(Between)同時檢定這個中介路徑。</p>
 
     <div class="step-container">
         <h2>📦 Step 1: 下載資料檔 (hlm3data.dat)</h2>
@@ -47,29 +143,29 @@ VARIABLE:
   NAMES ARE class_id math motiv ses;
   USEVARIABLES ARE class_id math motiv ses;
   CLUSTER IS class_id;  
-  WITHIN ARE ses;       ! 將自變數設定在 Level 1
-  ! 注意：Y 和 M 沒有設定，Mplus 會自動把它們拆解到兩層次
+  WITHIN ARE ses;       ! 將自變數設定在 Level 1 (純個體變數)
+  ! 注意：MATH 和 MOTIV 沒有設定，Mplus 會自動把它們拆解到兩層次 (看上面的路徑圖)
 
 ANALYSIS: 
   TYPE IS TWOLEVEL; 
 
 MODEL: 
   %WITHIN%
-  math ON motiv ses;  ! Y on M, X
-  motiv ON ses;       ! M on X
+  math ON motiv ses;  ! Y 被 M 與 X 預測 (包含直接效應與 M->Y)
+  motiv ON ses;       ! M 被 X 預測 (X->M)
 
   %BETWEEN%
-  math ON motiv;      ! 班級層次的路徑
+  math ON motiv;      ! 班級層次的路徑：各班平均動機 預測 各班平均成績
   
 MODEL INDIRECT:
-  math IND motiv ses; ! 要求 Mplus 計算 X -> M -> Y 的中介效應</pre>
+  math IND motiv ses; ! 終極指令：要求 Mplus 自動計算 X -> M -> Y 的中介效應</pre>
         <button class="btn" onclick="downloadFile('hlm3_model.inp', 'inpContent', 'msg2')">⬇️ 下載 hlm3_model.inp</button>
         <span id="msg2" class="success-msg">✅ 下載成功！</span>
     </div>
 
     <div class="step-container">
         <h2>🏃 Step 3: 中介效應報表解讀</h2>
-        <p>在報表的最下方，會出現 <strong>TOTAL, TOTAL INDIRECT, SPECIFIC INDIRECT, AND DIRECT EFFECTS</strong> 區塊：</p>
+        <p>加上 <code>MODEL INDIRECT</code> 指令後，在報表的最下方，會出現 <strong>TOTAL, TOTAL INDIRECT, SPECIFIC INDIRECT, AND DIRECT EFFECTS</strong> 區塊：</p>
         
         <pre>
 <strong style="color:#d35400;">Within Level</strong>
@@ -82,8 +178,8 @@ Specific Indirect
         <div class="explanation-box">
             <h3>💡 報表白話文翻譯：</h3>
             <div class="level-title">Specific Indirect (特定間接效應)</div>
-            <p>看 <code>MATH</code> 由 <code>MOTIV</code> 到 <code>SES</code> 的路徑（這就是 SES -> MOTIV -> MATH）。</p>
-            <p>結果顯示 Estimate 為 <span class="highlight-yellow">0.250</span>，且 <span class="highlight-green">P-Value = 0.002 (< 0.05)</span>。這代表在個體層次（學生個人）中，「社經地位 $\rightarrow$ 動機 $\rightarrow$ 數學」的中介路徑是顯著成立的！社經較高的學生，確實有較高的動機，進而帶來較好的數學表現。</p>
+            <p>看 <code>MATH</code> 由 <code>MOTIV</code> 到 <code>SES</code> 的路徑（這就是 SES $\rightarrow$ MOTIV $\rightarrow$ MATH 的中介效應值）。</p>
+            <p>結果顯示 Estimate 為 <span class="highlight-yellow">0.250</span>，且 <span class="highlight-green">P-Value = 0.002 (< 0.05)</span>。這代表在排除了班級氣氛的影響後，在純粹的個體層次（學生個人）中，「社經地位 $\rightarrow$ 動機 $\rightarrow$ 數學」的中介路徑是顯著成立的！社經較高的學生，確實會引發較高的學習動機，進而帶來更好的數學表現。</p>
         </div>
     </div>
 

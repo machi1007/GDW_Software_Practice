@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mplus 教學 - 語法終極解析手冊</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 950px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+        h1 { color: #c0392b; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #bdc3c7; padding-bottom: 5px; margin-top: 30px; }
+        h3 { color: #e67e22; margin-top: 20px; }
+        .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
+        .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
+        .alert-container { background: #fff3cd; border-radius: 8px; padding: 15px 20px; margin-bottom: 20px; border-left: 5px solid #ffc107; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; font-size: 15px; line-height: 1.5; }
+        .highlight-code { color: #f1c40f; font-weight: bold; }
+        .comment { color: #7f8c8d; font-style: italic; }
+        .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
+        
+        /* 表格專用樣式 */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #c0392b; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .danger-text { color: #c0392b; font-weight: bold; }
+        .code-text { font-family: 'Courier New', Courier, monospace; font-weight: bold; color: #c0392b; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
+
+    <h1>🛡️ Mplus 語法終極解析手冊 (Syntax Guide)</h1>
+    <p>初學 Mplus 最怕遇到報表當機或是不知道「換成自己的資料時該改哪裡」。這份解析手冊為你拆解了所有核心區塊，並整理出萬無一失的防呆守則與替換字典！</p>
+
+    <div class="alert-container">
+        <h2>⚠️ 第 0 步：Mplus 新手防呆三大鐵律</h2>
+        <ol>
+            <li><strong>分號是生命：</strong> 幾乎每一行程式碼的結尾都<strong>必須有分號 <code>;</code></strong>！這是 90% 新手報錯的原因。</li>
+            <li><strong>字數限制：</strong> 每一行語法<strong>不能超過 90 個字元</strong>。如果字數太多，請大方地按 Enter 換行，只要最後有分號即可。</li>
+            <li><strong>檔名無空白：</strong> 你的資料檔名與變數名稱只能使用<strong>英文字母、數字和底線</strong>，絕對不能有空格或中文字。</li>
+        </ol>
+    </div>
+
+    <div class="step-container">
+        <h2>🛠️ 第一部分：核心結構與進階設定</h2>
+        <pre>
+DATA: 
+  <span class="highlight-code">FILE IS</span> hlmdata.dat; <span class="comment">! 告訴軟體資料檔在哪裡</span>
+
+VARIABLE: 
+  <span class="highlight-code">NAMES ARE</span> class_id math ses t_exp; 
+  <span class="highlight-code">USEVARIABLES ARE</span> class_id math ses t_exp; 
+  <span class="highlight-code">MISSING ARE ALL (-999);</span> <span class="comment">! 【極重要】宣告缺失值代碼</span>
+  <span class="highlight-code">CLUSTER IS</span> class_id;    <span class="comment">! 宣告群聚變數 (Level 2 群體標籤)</span>
+  <span class="highlight-code">WITHIN ARE</span> ses;         <span class="comment">! 宣告 Level 1 個體專屬變數</span>
+  <span class="highlight-code">BETWEEN ARE</span> t_exp;      <span class="comment">! 宣告 Level 2 群體專屬變數</span>
+
+DEFINE:
+  <span class="highlight-code">CENTER ses (GROUPMEAN);</span>   <span class="comment">! 將 L1 變數進行群體平減</span>
+  <span class="highlight-code">CENTER t_exp (GRANDMEAN);</span> <span class="comment">! 將 L2 變數進行總體平減</span>
+
+ANALYSIS: 
+  <span class="highlight-code">TYPE IS TWOLEVEL;</span> <span class="comment">! 分析類型：雙層次模型</span>
+
+MODEL: 
+  <span class="highlight-code">%WITHIN%</span>
+  math ON ses; 
+
+  <span class="highlight-code">%BETWEEN%</span>
+  math ON t_exp; 
+
+OUTPUT: 
+  <span class="highlight-code">STANDARDIZED SAMPSTAT CINTERVAL;</span></pre>
+    </div>
+
+    <div class="step-container">
+        <h2>🧰 第二部分：Mplus 核心指令替換字典 (進階擴充包)</h2>
+        <p>當你想跑不同的模型或使用不同的估計法時，請參考以下字典進行替換：</p>
+
+        <h3>1. ANALYSIS: 分析類型與估計法 (TYPE & ESTIMATOR)</h3>
+        <table>
+            <tr>
+                <th>指令</th>
+                <th>選項參數</th>
+                <th>使用時機與意義</th>
+            </tr>
+            <tr>
+                <td rowspan="5" class="code-text">TYPE IS ...;</td>
+                <td><strong>GENERAL</strong> (預設)</td>
+                <td>一般的單層次模型 (如一般 SEM、迴歸、CFA)。如果不寫 TYPE，Mplus 預設就是這個。</td>
+            </tr>
+            <tr>
+                <td><strong>COMPLEX</strong></td>
+                <td>處理非獨立樣本 (如調查抽樣的群聚資料)，單純校正標準誤，不建立雙層次模型。</td>
+            </tr>
+            <tr>
+                <td><strong>TWOLEVEL</strong></td>
+                <td>多層次模型 (HLM)。假設只有「截距」是隨機的 (各班起跑點不同)。</td>
+            </tr>
+            <tr>
+                <td><strong>TWOLEVEL RANDOM</strong></td>
+                <td>包含隨機斜率的 HLM。允許「X對Y的影響力(斜率)」在各班之間有所不同。</td>
+            </tr>
+            <tr>
+                <td><strong>MIXTURE</strong></td>
+                <td>潛在類別分析 (LCA) 或潛在剖面分析 (LPA) 專用。</td>
+            </tr>
+            <tr>
+                <td rowspan="3" class="code-text">ESTIMATOR IS ...;</td>
+                <td><strong>ML / MLR</strong> (預設)</td>
+                <td>最大概似估計法。MLR 對於違反常態分配的連續變數具有強健性 (Robust)。</td>
+            </tr>
+            <tr>
+                <td><strong>WLSMV</strong></td>
+                <td>當你的依變項是「類別變數」或「順序變數」(如李克特 1-5 分量表) 時，強烈建議改用此估計法。</td>
+            </tr>
+            <tr>
+                <td><strong>BAYES</strong></td>
+                <td>貝氏估計。適合小樣本、複雜的多層次或動態模型 (DSEM)。</td>
+            </tr>
+        </table>
+
+        <h3>2. MODEL: 語法四大神聖符號</h3>
+        <table>
+            <tr>
+                <th>符號</th>
+                <th>語法範例</th>
+                <th>統計意義</th>
+                <th>常見應用模型</th>
+            </tr>
+            <tr>
+                <td class="code-text">ON</td>
+                <td><code>Y ON X;</code></td>
+                <td><strong>迴歸 / 預測</strong>：Y 被 X 預測 (X → Y)。</td>
+                <td>迴歸、路徑分析、SEM</td>
+            </tr>
+            <tr>
+                <td class="code-text">BY</td>
+                <td><code>F1 BY Y1 Y2 Y3;</code></td>
+                <td><strong>測量 / 由...組成</strong>：潛在變項 F1 由題項 Y1, Y2, Y3 測量。</td>
+                <td>EFA、CFA、SEM</td>
+            </tr>
+            <tr>
+                <td class="code-text">WITH</td>
+                <td><code>Y1 WITH Y2;</code></td>
+                <td><strong>相關 / 共變</strong>：Y1 與 Y2 之間有雙向相關 (Y1 ↔ Y2)。</td>
+                <td>CFA (誤差相關)、SEM</td>
+            </tr>
+            <tr>
+                <td class="code-text">|</td>
+                <td><code>S | Y ON X;</code></td>
+                <td><strong>定義隨機斜率</strong>：定義一個名為 S 的隨機變數，代表 X 對 Y 的斜率。</td>
+                <td>HLM Level 2、潛在成長曲線</td>
+            </tr>
+        </table>
+
+        <h3>3. OUTPUT: 報表輸出選項</h3>
+        <table>
+            <tr>
+                <th>選項代碼</th>
+                <th>它會在報表中增加什麼？</th>
+            </tr>
+            <tr>
+                <td class="code-text">STANDARDIZED</td>
+                <td><strong>【必加】</strong> 輸出標準化迴歸係數 (Beta值)。用來比較不同變數之間的影響力大小。</td>
+            </tr>
+            <tr>
+                <td class="code-text">SAMPSTAT</td>
+                <td>輸出樣本的敘述性統計 (平均數、變異數、相關矩陣)。</td>
+            </tr>
+            <tr>
+                <td class="code-text">MODINDICES (ALL)</td>
+                <td>修改指標 (MI值)。當配適度不佳時，它會提示「如果把 A 和 B 拉一條線，卡方值可以下降多少」。</td>
+            </tr>
+            <tr>
+                <td class="code-text">CINTERVAL</td>
+                <td>輸出所有估計值的 95% 信賴區間 (寫論文必備)。</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 第三部分：換成自己的資料怎麼改？(終極防呆指南)</h2>
+        <p>原則上：<strong>大寫英文字母是 Mplus 指令（不能動），小寫英文字母是變數名稱（需要改）。</strong></p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>語法指令</th>
+                    <th>換成自己資料時，你需要改什麼？</th>
+                    <th>絕對不能刪除 / 更改的地方 ⚠️</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>FILE IS ...;</code></td>
+                    <td>將 <code>hlmdata.dat</code> 換成自己的檔名 (必須全英文無空格，副檔名為 .dat 或 .csv)。</td>
+                    <td><span class="danger-text">FILE IS</span> 與結尾的分號 <span class="danger-text">;</span></td>
+                </tr>
+                <tr>
+                    <td><code>NAMES ARE ...;</code></td>
+                    <td>換成資料集裡的「所有」欄位名稱，順序必須與資料檔完全一致。</td>
+                    <td><span class="danger-text">NAMES ARE</span> 與結尾的分號 <span class="danger-text">;</span></td>
+                </tr>
+                <tr>
+                    <td><code>USEVARIABLES ARE ...;</code></td>
+                    <td>換成這次分析要用到的變數名稱。</td>
+                    <td><span class="danger-text">USEVARIABLES ARE</span> 與結尾的分號 <span class="danger-text">;</span></td>
+                </tr>
+                <tr>
+                    <td><code>MISSING ARE ALL...;</code></td>
+                    <td>如果你用 <code>999</code> 或 <code>.</code> 代表缺失值，請將括號內的數字換掉。</td>
+                    <td><span class="danger-text">MISSING ARE ALL</span> 與結尾的分號 <span class="danger-text">;</span></td>
+                </tr>
+                <tr>
+                    <td><code>CLUSTER IS ...;</code></td>
+                    <td>換成代表「Level 2 群體」的變數名稱 (如部門ID、公司ID)。</td>
+                    <td><span class="danger-text">CLUSTER IS</span> 與結尾的分號 <span class="danger-text">;</span></td>
+                </tr>
+                <tr>
+                    <td><code>WITHIN ARE ...;</code></td>
+                    <td>換成你的 Level 1 專屬自變項。<br><strong><span class="danger-text">⛔ 致命錯誤：跨層次的依變項（如成績）絕對不能放這裡！</span></strong></td>
+                    <td><span class="danger-text">WITHIN ARE</span> 與結尾的分號 <span class="danger-text">;</span></td>
+                </tr>
+                <tr>
+                    <td><code>BETWEEN ARE ...;</code></td>
+                    <td>換成你的 Level 2 專屬自變項。<br><strong><span class="danger-text">⛔ 致命錯誤：跨層次的依變項（如成績）絕對不能放這裡！</span></strong></td>
+                    <td><span class="danger-text">BETWEEN ARE</span> 與結尾的分號 <span class="danger-text">;</span></td>
+                </tr>
+                <tr>
+                    <td><code>%WITHIN%</code> 區塊</td>
+                    <td><code>Y ON X;</code> 把 Y 換成你的依變項，X 換成個體自變項。</td>
+                    <td><span class="danger-text">%WITHIN%</span> 以及 <span class="danger-text">ON</span> 的相對位置</td>
+                </tr>
+                <tr>
+                    <td><code>%BETWEEN%</code> 區塊</td>
+                    <td><code>Y ON W;</code> 把 Y 換成你的依變項，W 換成群體自變項。</td>
+                    <td><span class="danger-text">%BETWEEN%</span> 以及 <span class="danger-text">ON</span> 的相對位置</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>

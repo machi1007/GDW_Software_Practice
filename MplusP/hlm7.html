@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mplus 教學 - Level 7 潛在成長曲線模型 (LGM)</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; }
         h1 { color: #c0392b; }
         .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
         .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
@@ -13,18 +13,128 @@
         .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
         .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
         
-        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
-        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        /* 報表解讀專用樣式 */
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; font-family: monospace; font-size: 1.1em;}
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; font-weight: bold;}
         .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
         .level-title { font-weight: bold; color: #922b21; border-bottom: 1px solid #e6b0aa; padding-bottom: 5px; margin-top: 15px; }
+        
+        /* 圖解符號表樣式 */
+        .legend-box { display: flex; gap: 15px; flex-wrap: wrap; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
     </style>
 </head>
 <body>
 
-    <a href="index.html" class="nav-back">← 返回 HLM 10 階藍圖</a>
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
 
-    <h1>🏢 Level 7: 潛在成長曲線模型 (LGM)</h1>
-    <p><strong>研究目的：</strong>我們追蹤了學生四個學期的數學成績（Wide format，長寬資料格式）。我們想計算出學生們的「起始成績 (Intercept)」和「成長速度 (Slope)」，並看看起點高的人，進步速度是比較快還是比較慢。</p>
+    <h1>🏢 Level 7: 潛在成長曲線模型 (Latent Growth Model, LGM)</h1>    
+    
+    <div class="step-container">
+        <h2>🧠 原理與應用 (Principle & Application)</h2>
+        
+        <h3>1. 為什麼 LGM 也是一種「多層次模型」？</h3>
+        <p>當我們對同一批學生連續追蹤四個學期，這組數據天然具備了巢狀結構：<strong>「時間點 (Level 1)」被嵌套在「個人 (Level 2)」裡面</strong>。傳統的重複測量變異數分析 (Repeated-Measures ANOVA) 只能看出「全班平均」有沒有進步，且非常害怕缺失值。而 LGM 使用結構方程 (SEM) 的技術，不僅能算出全班的平均成長趨勢，還能捕捉到「每個人獨特的進步速度差異」。</p>
+
+        <h3>2. 核心概念：截距 (Intercept) 與 斜率 (Slope) 變成了潛在變項！</h3>
+        <p>在 LGM 中，我們不直接比較四個時間點的分數，而是透過這四個分數「反向萃取」出兩個潛在變項：</p>
+        <ul>
+            <li><strong>起始狀態 (Intercept, I)：</strong>代表第一學期的起點分數。它對每個時間點的影響力 (因素負荷量) 都固定為 1。</li>
+            <li><strong>成長速度 (Slope, S)：</strong>代表隨著時間改變的速度。對於線性成長，它對各個時間點的影響力會被強制設定為 0, 1, 2, 3。</li>
+        </ul>
+
+        <h3>3. 應用何處？</h3>
+        <p>只要你的研究有 <strong>「長期追蹤 (至少 3 到 4 個時間點以上)」</strong> 的數據，LGM 就是首選：</p>
+        <ul>
+            <li><strong>教育與發展 (如本例)：</strong>學生的數學成績是穩定上升還是有高原期？起始成績較差的學生，其後續的進步幅度是否較大（補償效應）？</li>
+            <li><strong>臨床心理與諮商：</strong>追蹤憂鬱症患者接受 8 週治療的症狀變化。評估哪種治療流派能讓患者「症狀下降的速度 (Slope)」最快。</li>
+            <li><strong>商業與行銷：</strong>追蹤新產品上市後 12 個月的銷售量軌跡，並加入行銷預算作為預測成長斜率的變數 (Conditional LGM)。</li>
+        </ul>
+    </div>
+
+    <div class="step-container">
+        <h2>📊 模型概念與路徑圖 (Path Diagram)</h2>
+        <p>這張圖展示了 LGM 的巧妙之處：我們用 CFA 的架構，強制設定了箭頭上的數字 (0, 1, 2, 3)，從而定義出「時間流逝」的概念。</p>
+        
+        <svg viewBox="0 0 700 400" style="background:#fff; border-radius:8px; border:1px solid #ccc; width:100%; height:auto; display:block; margin:0 auto;">
+            <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#333" />
+                </marker>
+                <marker id="arrow-start" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 10 0 L 0 5 L 10 10 z" fill="#333" />
+                </marker>
+            </defs>
+            
+            <circle cx="250" cy="80" r="45" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
+            <text x="250" y="80" text-anchor="middle" font-size="20" font-weight="bold" fill="#d35400">I</text>
+            <text x="250" y="105" text-anchor="middle" font-size="12" fill="#555">(起點/截距)</text>
+
+            <circle cx="450" cy="80" r="45" fill="#f4ecf7" stroke="#8e44ad" stroke-width="2" />
+            <text x="450" y="80" text-anchor="middle" font-size="20" font-weight="bold" fill="#8e44ad">S</text>
+            <text x="450" y="105" text-anchor="middle" font-size="12" fill="#555">(成長率/斜率)</text>
+
+            <path d="M 295 80 Q 350 40 405 80" fill="transparent" stroke="#333" stroke-width="2" marker-start="url(#arrow-start)" marker-end="url(#arrow)" />
+            <text x="350" y="45" text-anchor="middle" font-size="14" fill="#c0392b" font-family="monospace">I WITH S;</text>
+
+            <rect x="90" y="280" width="80" height="50" rx="4" fill="#eaf2f8" stroke="#3498db" stroke-width="2" />
+            <text x="130" y="310" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">y1</text>
+            <text x="130" y="350" text-anchor="middle" font-size="12" fill="#7f8c8d">Time 0</text>
+
+            <rect x="230" y="280" width="80" height="50" rx="4" fill="#eaf2f8" stroke="#3498db" stroke-width="2" />
+            <text x="270" y="310" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">y2</text>
+            <text x="270" y="350" text-anchor="middle" font-size="12" fill="#7f8c8d">Time 1</text>
+
+            <rect x="370" y="280" width="80" height="50" rx="4" fill="#eaf2f8" stroke="#3498db" stroke-width="2" />
+            <text x="410" y="310" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">y3</text>
+            <text x="410" y="350" text-anchor="middle" font-size="12" fill="#7f8c8d">Time 2</text>
+
+            <rect x="510" y="280" width="80" height="50" rx="4" fill="#eaf2f8" stroke="#3498db" stroke-width="2" />
+            <text x="550" y="310" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">y4</text>
+            <text x="550" y="350" text-anchor="middle" font-size="12" fill="#7f8c8d">Time 3</text>
+
+            <line x1="225" y1="117" x2="140" y2="275" stroke="#e67e22" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="160" y="210" font-size="16" font-weight="bold" fill="#d35400">@1</text>
+
+            <line x1="245" y1="125" x2="265" y2="275" stroke="#e67e22" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="240" y="210" font-size="16" font-weight="bold" fill="#d35400">@1</text>
+
+            <line x1="265" y1="122" x2="390" y2="275" stroke="#e67e22" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="315" y="210" font-size="16" font-weight="bold" fill="#d35400">@1</text>
+
+            <line x1="285" y1="108" x2="520" y2="275" stroke="#e67e22" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="390" y="180" font-size="16" font-weight="bold" fill="#d35400">@1</text>
+
+            <line x1="415" y1="108" x2="160" y2="275" stroke="#8e44ad" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="4,4" />
+            <text x="290" y="170" font-size="16" font-weight="bold" fill="#8e44ad">@0</text>
+
+            <line x1="435" y1="122" x2="290" y2="275" stroke="#8e44ad" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="365" y="220" font-size="16" font-weight="bold" fill="#8e44ad">@1</text>
+
+            <line x1="455" y1="125" x2="425" y2="275" stroke="#8e44ad" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="450" y="220" font-size="16" font-weight="bold" fill="#8e44ad">@2</text>
+
+            <line x1="475" y1="117" x2="540" y2="275" stroke="#8e44ad" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="520" y="210" font-size="16" font-weight="bold" fill="#8e44ad">@3</text>
+        </svg>
+
+        <div class="legend-box">
+            <div class="legend-item">
+                <svg width="24" height="16"><rect width="24" height="16" fill="white" stroke="#3498db" stroke-width="2"/></svg>
+                <span><strong>矩形：</strong>我們真實收集到的四個時間點成績 (y1-y4)。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="white" stroke="#e67e22" stroke-width="2"/></svg>
+                <span><strong>潛在起點 (I)：</strong>影響每個時間點的權重均為 1，代表基礎分數。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="white" stroke="#8e44ad" stroke-width="2"/></svg>
+                <span><strong>潛在斜率 (S)：</strong>權重隨時間遞增 (0,1,2,3...)，藉此捕捉隨時間變化的幅度。</span>
+            </div>
+        </div>
+    </div>
+
+    <p><strong>研究目的實作：</strong>我們追蹤了學生四個學期的數學成績（Wide format，寬資料格式）。我們想計算出學生們整體的「起始成績 (Intercept)」和「成長速度 (Slope)」，並評估「起點高的人，進步速度是比較快還是比較慢 (I WITH S)」。</p>
 
     <div class="step-container">
         <h2>📦 Step 1: 下載資料檔 (hlm7data.dat)</h2>
@@ -40,7 +150,7 @@
 
     <div class="step-container">
         <h2>📝 Step 2: 下載語法檔 (hlm7_lgm.inp)</h2>
-        <p>Mplus 處理 LGM 非常簡單，它提供了一個 <code>|</code> (管線符號) 來直接定義截距與斜率：</p>
+        <p>Mplus 處理 LGM 非常簡單，它提供了一個 <code>|</code> (管線符號，定義斜率) 來直接架構這兩個潛在因子：</p>
         <pre id="inpContent">TITLE: Latent Growth Model (Linear);
 DATA: FILE IS hlm7data.dat;
 VARIABLE: 
@@ -50,7 +160,7 @@ VARIABLE:
 MODEL: 
   ! i 代表 Intercept (截距/起點)
   ! s 代表 Slope (斜率/成長率)
-  ! 後面的 @0, @1 代表時間的間隔 (線性成長)
+  ! 後面的 @0, @1 代表時間的間隔，@0 代表這裡是起點。
   i s | y1@0 y2@1 y3@2 y4@3;  
 
 OUTPUT: SAMPSTAT STANDARDIZED;</pre>
@@ -60,6 +170,8 @@ OUTPUT: SAMPSTAT STANDARDIZED;</pre>
 
     <div class="step-container">
         <h2>🏃 Step 3: 報表重點解讀</h2>
+        
+        <p>跑完 LGM 後，我們最關心的是潛在起點 (I) 與潛在斜率 (S) 的 <strong>平均數 (Means)</strong>、<strong>變異數 (Variances)</strong>，以及它們的 <strong>共變異 (Covariance)</strong>。</p>
         
         <pre>
 Means
@@ -77,13 +189,13 @@ I  WITH
         <div class="explanation-box">
             <h3>💡 報表白話文翻譯：</h3>
             <div class="level-title">1. Means (平均起點與平均成長率)</div>
-            <p>這群學生的平均起始成績 (I) 是 71 分，每個學期平均進步 (S) 4.5 分。</p>
+            <p>這群學生的平均起始成績 (I 的 Mean) 是 71 分，每個學期平均進步 (S 的 Mean) 4.5 分。</p>
 
-            <div class="level-title">2. Variances (個別差異)</div>
-            <p>起點 (I) 和進步速度 (S) 的變異數都是顯著的 (<span class="highlight-green">p=0.000</span>)。這代表每個學生的起點不一樣，而且<strong>每個學生的進步速度也不一樣！</strong>（這就是為什麼我們需要多層次/隨機斜率的概念）。</p>
+            <div class="level-title">2. Variances (個別差異的檢定)</div>
+            <p>起點 (I) 和進步速度 (S) 的變異數都是顯著的 (<span class="highlight-green">p=0.000</span>)。這代表：每個學生的起點不一樣，而且<strong>每個人進步的速度也確實存在顯著差異！</strong>（這證實了每個學生有自己獨特的成長軌跡，也是我們後續能加入預測變項來解釋這個差異的前提）。</p>
 
             <div class="level-title">3. I WITH S (起點與成長的相關性)</div>
-            <p>共變異數 (I WITH S) 為 <span class="highlight-yellow">-25.300</span> 且顯著。這是一個<strong>負相關</strong>，意思是：「起始成績越高的學生，進步速度越慢（可能遇到了天花板效應）；而起始成績較低的學生，進步幅度反而較大！」</p>
+            <p>共變異數 (I WITH S) 為 <span class="highlight-yellow">-25.300</span> 且顯著 <span class="highlight-green">(p=0.016)</span>。這是一個<strong>負相關</strong>，意思是：「起始成績越高的學生，後續進步的速度越慢（可能遇到了天花板效應）；而起始成績較低的學生，進步幅度反而較大（追趕效應）！」</p>
         </div>
     </div>
 

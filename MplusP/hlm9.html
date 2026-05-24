@@ -5,35 +5,155 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mplus 教學 - Level 9 多層次潛在轉換分析 (MLTA)</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; }
         h1 { color: #c0392b; }
         .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
         .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
         pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; }
         .btn { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; gap: 5px; }
         .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
+        
+        /* 報表解讀專用樣式 */
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; font-family: monospace; font-size: 1.1em;}
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; font-weight: bold;}
         .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
+        .level-title { font-weight: bold; color: #922b21; border-bottom: 1px solid #e6b0aa; padding-bottom: 5px; margin-top: 15px; }
+        
+        /* 圖解符號表樣式 */
+        .legend-box { display: flex; gap: 15px; flex-wrap: wrap; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
     </style>
 </head>
 <body>
 
-    <a href="index.html" class="nav-back">← 返回 HLM 10 階藍圖</a>
+    <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
 
-    <h1>🏢 Level 9: 多層次潛在轉換分析 (MLTA)</h1>
-    <p><strong>研究目的：</strong>結合追蹤資料 (Time 1 與 Time 2) 與嵌套結構 (班級)。探討學生在兩個時間點之間的「類別狀態轉換 (Transition)」，並分析班級層次是否會影響這個轉換機率。</p>
+    <h1>🏢 Level 9: 多層次潛在轉換分析 (Multilevel LTA, MLTA)</h1>    
+    
+    <div class="step-container">
+        <h2>🧠 原理與應用 (Principle & Application)</h2>
+        
+        <h3>1. 什麼是潛在轉換分析 (LTA)？</h3>
+        <p>LTA 是 LCA (潛在類別分析) 的縱貫性延伸版。當我們對同一批學生在「上學期(Time 1)」和「下學期(Time 2)」都進行測量時，學生可能會從「低動機型」改變為「高動機型」。LTA 的核心是估計出一個<strong>「轉換機率矩陣 (Transition Probability Matrix)」</strong>，告訴我們狀態改變的機率有多高。</p>
+
+        <h3>2. 加入多層次 (Multilevel) 的威力</h3>
+        <p>在純 LTA 中，所有人的轉換機率是一樣的。但如果我們加入班級層次 (MLTA)，模型就能回答一個更實務的問題：<strong>「在優良班級氛圍 (CB=1) 中，學生從低動機轉為高動機的機率，是不是比在低迷班級 (CB=2) 中更高？」</strong> MLTA 讓我們證實了巨觀環境如何介入並改變微觀個體的發展軌跡。</p>
+
+        <h3>3. 應用何處？</h3>
+        <p>MLTA 專門用於評估<strong>「群體環境介入對個體行為改變的成效」</strong>：</p>
+        <ul>
+            <li><strong>教育介入 (如本例)：</strong>評估特定教學法或班級氣氛 (L2類別)，能否顯著提高學生從「學習落後組」躍升至「學習跟上組」的轉換率。</li>
+            <li><strong>公衛與成癮防治：</strong>病患嵌套於治療中心。探討哪種類型的治療中心 (L2類別)，能有效降低病患從「低度依賴」惡化為「重度成癮」的轉換率。</li>
+            <li><strong>組織行為學：</strong>追蹤新進員工第一年與第二年的留任心態。探討何種部門文化 (L2類別) 能有效防止員工從「充滿熱忱」轉向「安靜離職」。</li>
+        </ul>
+    </div>
 
     <div class="step-container">
-        <h2>📝 Step 1: 語法檔核心結構 (hlm9_mlta.inp)</h2>
-        <pre id="inpContent">TITLE: Multilevel LTA;
+        <h2>📊 模型概念與路徑圖 (Path Diagram)</h2>
+        <p>在這張圖中，你可以清楚看到時間軸 (Time 1 -> Time 2) 在底層發生，而上層的班級類別 (CB) 就像一隻無形的手，同時介入了起點與轉換的過程。</p>
+        
+        <svg viewBox="0 0 700 480" style="background:#fff; border-radius:8px; border:1px solid #ccc; width:100%; height:auto; display:block; margin:0 auto;">
+            <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#333" />
+                </marker>
+                <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#c0392b" />
+                </marker>
+            </defs>
+            
+            <line x1="50" y1="200" x2="650" y2="200" stroke="#95a5a6" stroke-width="2" stroke-dasharray="8,8" />
+            <text x="60" y="190" font-size="16" fill="#7f8c8d" font-weight="bold">Between Level (Level 2: 班級層次)</text>
+            <text x="60" y="220" font-size="16" fill="#7f8c8d" font-weight="bold">Within Level (Level 1: 學生層次)</text>
+
+            <circle cx="350" cy="80" r="50" fill="#f4ecf7" stroke="#8e44ad" stroke-width="3" stroke-dasharray="6,4" />
+            <text x="350" y="85" text-anchor="middle" font-size="22" font-weight="bold" fill="#8e44ad">CB</text>
+            <text x="350" y="115" text-anchor="middle" font-size="13" fill="#555">(班級整體類型)</text>
+            
+            <circle cx="200" cy="300" r="50" fill="#eaf2f8" stroke="#2980b9" stroke-width="3" stroke-dasharray="6,4" />
+            <text x="200" y="305" text-anchor="middle" font-size="22" font-weight="bold" fill="#2980b9">C1</text>
+            <text x="200" y="335" text-anchor="middle" font-size="13" fill="#555">(Time 1 學生類型)</text>
+
+            <circle cx="500" cy="300" r="50" fill="#ebf5fb" stroke="#1abc9c" stroke-width="3" stroke-dasharray="6,4" />
+            <text x="500" y="305" text-anchor="middle" font-size="22" font-weight="bold" fill="#1abc9c">C2</text>
+            <text x="500" y="335" text-anchor="middle" font-size="13" fill="#555">(Time 2 學生類型)</text>
+
+            <line x1="260" y1="300" x2="435" y2="300" stroke="#c0392b" stroke-width="4" marker-end="url(#arrow-red)" />
+            <text x="350" y="285" text-anchor="middle" font-size="15" font-weight="bold" fill="#c0392b" font-family="monospace">C2 ON C1</text>
+            <text x="350" y="325" text-anchor="middle" font-size="13" font-weight="bold" fill="#c0392b">(轉換機率矩陣)</text>
+
+            <line x1="310" y1="110" x2="225" y2="245" stroke="#8e44ad" stroke-width="3" marker-end="url(#arrow)" />
+            <text x="240" y="160" font-size="14" font-weight="bold" fill="#8e44ad" font-family="monospace">C1 ON CB</text>
+
+            <line x1="390" y1="110" x2="475" y2="245" stroke="#8e44ad" stroke-width="3" marker-end="url(#arrow)" />
+            <text x="400" y="160" font-size="14" font-weight="bold" fill="#8e44ad" font-family="monospace">C2 ON CB</text>
+
+            <rect x="130" y="390" width="60" height="35" rx="4" fill="#fff" stroke="#3498db" stroke-width="2" />
+            <text x="160" y="413" text-anchor="middle" font-size="15" font-weight="bold" fill="#333">u11</text>
+            
+            <rect x="210" y="390" width="60" height="35" rx="4" fill="#fff" stroke="#3498db" stroke-width="2" />
+            <text x="240" y="413" text-anchor="middle" font-size="15" font-weight="bold" fill="#333">u12</text>
+
+            <rect x="430" y="390" width="60" height="35" rx="4" fill="#fff" stroke="#1abc9c" stroke-width="2" />
+            <text x="460" y="413" text-anchor="middle" font-size="15" font-weight="bold" fill="#333">u21</text>
+            
+            <rect x="510" y="390" width="60" height="35" rx="4" fill="#fff" stroke="#1abc9c" stroke-width="2" />
+            <text x="540" y="413" text-anchor="middle" font-size="15" font-weight="bold" fill="#333">u22</text>
+
+            <line x1="185" y1="345" x2="160" y2="385" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <line x1="215" y1="345" x2="240" y2="385" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <line x1="485" y1="345" x2="460" y2="385" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <line x1="515" y1="345" x2="540" y2="385" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+        </svg>
+
+        <div class="legend-box">
+            <div class="legend-item">
+                <svg width="24" height="24"><circle cx="12" cy="12" r="10" fill="white" stroke="#2980b9" stroke-width="2" stroke-dasharray="3,2"/></svg>
+                <span><strong>虛線圓形：</strong>潛在類別。C1(前測)、C2(後測) 以及 CB(班級類型)。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="24" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="#c0392b" stroke-width="3" marker-end="url(#arrow-red)"/></svg>
+                <span><strong>橫向粗紅箭頭：</strong>Time 1 到 Time 2 的轉換矩陣 (Transition)。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="24" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="#8e44ad" stroke-width="3" marker-end="url(#arrow)"/></svg>
+                <span><strong>斜向紫箭頭：</strong>班級類型跨層次影響「起始狀態」與「轉換機率」。</span>
+            </div>
+        </div>
+    </div>
+
+    <p><strong>研究目的實作：</strong>我們追蹤了學生兩學期的行為 (T1: u11,u12; T2: u21,u22)。我們想知道：學生從 T1 轉移到 T2 的型態機率為何？而「優良的班級類型」是否能提高學生轉移到「正向行為組」的機率？</p>
+
+    <div class="step-container">
+        <h2>📦 Step 1: 下載資料檔 (hlm9data.dat)</h2>
+        <p>資料格式：班級ID, u11, u12 (Time1指標), u21, u22 (Time2指標)</p>
+        <pre id="dataContent">1 1 1 1 1
+1 1 0 1 1
+1 0 0 1 0
+2 0 0 0 0
+2 0 1 0 0
+2 1 0 0 0
+3 1 1 1 1
+3 0 1 1 1</pre>
+        <button class="btn" onclick="downloadFile('hlm9data.dat', 'dataContent', 'msg1')">⬇️ 下載 hlm9data.dat</button>
+        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+    </div>
+
+    <div class="step-container">
+        <h2>📝 Step 2: 語法檔核心 (hlm9_mlta.inp)</h2>
+        <p>重點在於 <code>CLASSES</code> 定義了三個類別變數，並在 <code>MODEL</code> 中安排它們的順序關係。</p>
+        <pre id="inpContent">TITLE: Multilevel Latent Transition Analysis;
 DATA: FILE IS hlm9data.dat;
 VARIABLE: 
-  NAMES ARE class_id u11 u12 u21 u22; ! 第一碼是時間，第二碼是題目
-  USEVARIABLES ARE u11-u22;
+  NAMES ARE class_id u11 u12 u21 u22;
+  USEVARIABLES ARE class_id u11-u22;
   CATEGORICAL ARE u11-u22;
   CLUSTER IS class_id;  
   
-  ! C1 代表 Time 1 的類別，C2 代表 Time 2 的類別
-  ! CB 代表班級層次的分類
+  ! 定義三個潛在類別變項:
+  ! CB: 班級層次的分類 (2類)
+  ! C1: Time 1 學生分類 (2類)
+  ! C2: Time 2 學生分類 (2類)
   CLASSES = CB(2) C1(2) C2(2); 
 
 ANALYSIS: 
@@ -42,22 +162,53 @@ ANALYSIS:
 MODEL:
   %WITHIN%
   %OVERALL%
-  C2 ON C1; ! 學生在 T2 的類別取決於 T1 的狀態 (轉換矩陣)
+  C2 ON C1; ! 核心：學生在 T2 的類別，取決於 T1 的狀態 (轉換矩陣)
   
   %BETWEEN%
   %OVERALL%
-  C1 ON CB; ! 班級類型影響學生 T1 的起始狀態
-  C2 ON C1 CB; ! 班級類型同時影響學生的轉換狀態</pre>
-        <button class="btn" onclick="downloadFile('hlm9_mlta.inp', 'inpContent', 'msg1')">⬇️ 下載 hlm9_mlta.inp</button>
-        <span id="msg1" class="success-msg">✅ 下載成功！</span>
+  C1 ON CB;    ! 班級類型影響學生 T1 的起始狀態
+  C2 ON C1 CB; ! 班級類型同時影響學生的轉換軌跡</pre>
+        <button class="btn" onclick="downloadFile('hlm9_mlta.inp', 'inpContent', 'msg2')">⬇️ 下載 hlm9_mlta.inp</button>
+        <span id="msg2" class="success-msg">✅ 下載成功！</span>
     </div>
 
     <div class="step-container">
-        <h2>🏃 核心觀念：轉換機率矩陣 (Transition Probabilities)</h2>
+        <h2>🏃 Step 3: 轉換機率矩陣報表解讀</h2>
+        
+        <p>這是一個非常強大的高階模型。報表中最核心的是 <strong>LATENT TRANSITION PROBABILITIES</strong>（潛在轉換機率表），它會根據不同的班級類型 (CB) 分別呈現：</p>
+        
+        <pre>
+LATENT TRANSITION PROBABILITIES BASED ON THE ESTIMATED MODEL
+(Conditional on Between-Level Class CB)
+
+  When <strong style="color:#8e44ad;">CB = 1</strong> (假設為：高學習風氣班)
+                   C2 = 1          C2 = 2
+    C1 = 1         <span class="highlight-yellow">0.850</span>           <span class="highlight-green">0.150</span>
+    C1 = 2         <span class="highlight-green">0.700</span>           <span class="highlight-yellow">0.300</span>
+
+  When <strong style="color:#8e44ad;">CB = 2</strong> (假設為：低學習風氣班)
+                   C2 = 1          C2 = 2
+    C1 = 1         <span class="highlight-yellow">0.950</span>           <span class="highlight-green">0.050</span>
+    C1 = 2         <span class="highlight-green">0.100</span>           <span class="highlight-yellow">0.900</span>
+        </pre>
+
         <div class="explanation-box">
-            <p>這是一個非常強大的高階模型。分析結果會告訴我們：<br>
-            假設學生在 Time 1 處於「低動機組」，到了 Time 2，他維持低動機的機率是多少？跳級到「高動機組」的機率又是多少？<br>
-            而在 <strong>MLTA</strong> 中，這個機率並不是固定的，它會被 <code>CB (班級類型)</code> 所調節！也就是說，在良好班風的班級中，低動機學生逆襲轉變為高動機的機率會顯著提高！</p>
+            <h3>💡 報表白話文翻譯：</h3>
+            <p>這張表讀法是「橫著看」。假設 <code>C=1</code> 是「高動機組」，<code>C=2</code> 是「低動機組」。</p>
+            
+            <div class="level-title">1. 在優良班級 (CB = 1) 的轉變：</div>
+            <ul>
+                <li>原本 T1 就是高動機 (C1=1) 的人，有 <span class="highlight-yellow">85%</span> 的機率維持高動機。</li>
+                <li><strong>重點來了：</strong>原本 T1 是「低動機 (C1=2)」的落後學生，到了 T2 居然有高達 <span class="highlight-green">70%</span> 的機率能逆轉勝躍升到「高動機組 (C2=1)」！只有 30% 會繼續留在谷底。</li>
+            </ul>
+
+            <div class="level-title">2. 在低迷班級 (CB = 2) 的轉變：</div>
+            <ul>
+                <li>原本 T1 就是高動機 (C1=1) 的人，雖然有 95% 能維持，但如果本來就在谷底呢？</li>
+                <li>原本 T1 是「低動機 (C1=2)」的學生，在這種班級裡，只有可憐的 <span class="highlight-green">10%</span> 能翻身變成高動機 (C2=1)，而有高達 <span class="highlight-yellow">90%</span> 的人會繼續擺爛 (C2=2)。</li>
+            </ul>
+            
+            <p><strong>🔥 終極結論：</strong>這份報表完美證明了環境的重要性！身處在優良的班級氣氛中，即使學生一開始落後，也有極高的機率能夠產生正向轉變！這就是 MLTA 能為教育或臨床介入政策帶來的強大科學證據。</p>
         </div>
     </div>
 

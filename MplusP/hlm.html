@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mplus 教學 - 多層次模型 (HLM)</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; }
         h1 { color: #c0392b; }
         .nav-back { text-decoration: none; color: #c0392b; font-weight: bold; margin-bottom: 20px; display: inline-block; }
         .step-container { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid #c0392b; }
@@ -14,18 +14,106 @@
         .success-msg { color: #0f9d58; font-weight: bold; margin-left: 10px; display: none; }
         
         /* 報表解讀專用樣式 */
-        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; }
-        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; }
+        .highlight-yellow { background-color: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; font-family: monospace; font-size: 1.1em;}
+        .highlight-green { background-color: #d4edda; color: #155724; padding: 2px 4px; border-radius: 3px; font-weight: bold;}
         .explanation-box { background: #fdedec; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #f5b7b1; }
         .level-title { font-weight: bold; color: #922b21; border-bottom: 1px solid #e6b0aa; padding-bottom: 5px; margin-top: 15px; }
+        
+        /* 圖解符號表樣式 */
+        .legend-box { display: flex; gap: 15px; flex-wrap: wrap; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
     </style>
 </head>
 <body>
 
     <a href="index.html" class="nav-back">← 返回首頁 (Model Hub)</a>
 
-    <h1>🏢 多層次模型 (HLM / Two-Level Model)</h1>
-    <p><strong>研究目的：</strong>學生被嵌套在班級裡。探討：(Level 1) 學生「社經地位(SES)」能否預測數學成績？ (Level 2) 老師「教學年資(T_EXP)」能否預測班級的整體平均數學成績？</p>
+    <h1>🏢 Level 1: 基礎兩層次模型 (隨機截距模型)</h1>    
+    
+    <div class="step-container">
+        <h2>🧠 原理與應用 (Principle & Application)</h2>
+        
+        <h3>1. 為什麼需要兩層次模型？</h3>
+        <p>在傳統的線性迴歸中，有一個核心假設：<strong>觀察值之間必須互相獨立</strong>。但本例中的資料具有<strong>巢狀結構 (Nested Data)</strong>：學生 (Level 1) 被嵌套在班級 (Level 2) 裡。同班學生共享同一位老師與班級氛圍，其成績通常具有關聯性。如果硬用傳統迴歸，會違反獨立性假設，導致標準誤被低估，大幅增加「誤判為顯著」的風險 (型一錯誤)。</p>
+
+        <h3>2. 隨機截距模型 (Random Intercept Model) 的本質</h3>
+        <p>這類基礎模型的核心在於允許<strong>「截距是隨機的」</strong>：承認每個班級都有自己專屬的「數學成績起跑點（基準線）」。同時假設<strong>「斜率是固定的」</strong>：不管在哪個班級，家庭社經地位 (SES) 對數學成績的影響力都是一樣的。</p>
+        
+        <div class="explanation-box">
+            <div class="level-title">📊 關鍵指標：ICC (組內相關係數)</div>
+            <p>執行 HLM 的第一步通常會先看空模型的 ICC (Intraclass Correlation Coefficient)，公式為：<code>班級間變異 / (班級間變異 + 班級內變異)</code>。一般來說，當 <strong>ICC > 0.05</strong> 時，代表成績的變異有 5% 以上來自於「班級不同」，此時就強烈必須使用多層次模型。</p>
+        </div>
+
+        <h3>3. 應用何處？</h3>
+        <p>隨機截距模型專門用於<strong>「評估群體層次的環境變數，是否能解釋群體基準線差異」</strong>的場景。常見應用包含：</p>
+        <ul>
+            <li><strong>教育研究 (如本教學範例)：</strong>在控制學生個人的背景 (SES) 後，探討不同班級的老師教學年資 (T_EXP)，是否會造成各班「平均成績」的顯著落差？</li>
+            <li><strong>組織行為學：</strong>員工嵌套於部門。控制員工自身能力後，探討不同部門的「主管支援度」，是否會影響該部門的整體平均績效？</li>
+        </ul>
+    </div>
+
+    <div class="step-container">
+        <h2>📊 模型概念與路徑圖 (Path Diagram)</h2>
+        <p>在 Mplus 的多層次架構中，模型會被清楚地切分為 <strong>Within (組內)</strong> 與 <strong>Between (組間)</strong> 兩個獨立的運作層次。以下是本範例對應的 Mplus 結構圖：</p>
+        
+        <svg viewBox="0 0 700 450" style="background:#fff; border-radius:8px; border:1px solid #ccc; width:100%; height:auto; display:block; margin:0 auto;">
+            <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#333" />
+                </marker>
+            </defs>
+            
+            <line x1="50" y1="225" x2="650" y2="225" stroke="#95a5a6" stroke-width="2" stroke-dasharray="8,8" />
+            <text x="60" y="215" font-size="16" fill="#7f8c8d" font-weight="bold">Between Level (Level 2: 班級層次)</text>
+            <text x="60" y="245" font-size="16" fill="#7f8c8d" font-weight="bold">Within Level (Level 1: 學生層次)</text>
+
+            <rect x="150" y="80" width="120" height="60" rx="4" fill="#e8f8f5" stroke="#1abc9c" stroke-width="2" />
+            <text x="210" y="115" text-anchor="middle" font-size="18" font-weight="bold" fill="#16a085">T_EXP</text>
+            <text x="210" y="155" text-anchor="middle" font-size="14" fill="#555">(老師年資)</text>
+
+            <circle cx="500" cy="110" r="45" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
+            <text x="500" y="115" text-anchor="middle" font-size="18" font-weight="bold" fill="#d35400">MATH</text>
+            <text x="500" y="175" text-anchor="middle" font-size="14" fill="#555">(班級平均成績)</text>
+
+            <line x1="270" y1="110" x2="445" y2="110" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="357" y="100" text-anchor="middle" font-size="14" fill="#c0392b" font-family="monospace">math ON t_exp;</text>
+
+            <rect x="150" y="300" width="120" height="60" rx="4" fill="#eaf2f8" stroke="#3498db" stroke-width="2" />
+            <text x="210" y="335" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">SES</text>
+            <text x="210" y="380" text-anchor="middle" font-size="14" fill="#555">(學生社經地位)</text>
+
+            <rect x="440" y="300" width="120" height="60" rx="4" fill="#eaf2f8" stroke="#3498db" stroke-width="2" />
+            <text x="500" y="335" text-anchor="middle" font-size="18" font-weight="bold" fill="#2980b9">MATH</text>
+            <text x="500" y="380" text-anchor="middle" font-size="14" fill="#555">(學生個人成績)</text>
+
+            <circle cx="500" cy="300" r="6" fill="#2c3e50" />
+            
+            <line x1="500" y1="294" x2="500" y2="155" stroke="#2c3e50" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow)" />
+            <text x="510" y="250" font-size="14" fill="#2c3e50">截距變異向上抽取</text>
+
+            <line x1="270" y1="330" x2="430" y2="330" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="350" y="320" text-anchor="middle" font-size="14" fill="#c0392b" font-family="monospace">math ON ses;</text>
+        </svg>
+
+        <div class="legend-box">
+            <div class="legend-item">
+                <svg width="24" height="16"><rect width="24" height="16" fill="white" stroke="#3498db" stroke-width="2"/></svg>
+                <span><strong>矩形 (Rectangle)：</strong>真實收集到的觀察變項 (Observed Variables)。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="white" stroke="#e67e22" stroke-width="2"/></svg>
+                <span><strong>圓形 (Circle)：</strong>潛在變項。在 HLM 中，Level 2 的依變項是由底層算出的「隨機截距(班級均值)」，屬於潛在變項。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="24" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/></svg>
+                <span><strong>單向箭頭 (Arrow)：</strong>因果預測路徑，在 Mplus 語法中對應 <code>ON</code> 指令。</span>
+            </div>
+            <div class="legend-item">
+                <svg width="20" height="20"><circle cx="10" cy="10" r="4" fill="#2c3e50"/></svg>
+                <span><strong>黑點 (Filled Dot)：</strong>隨機效果。代表該變數的截距或斜率「允許在不同群體間變動」，並向上抽成 Level 2 的圓形。</span>
+            </div>
+        </div>
+    </div>
 
     <div class="step-container">
         <h2>📦 Step 1: 下載資料檔 (hlmdata.dat)</h2>
@@ -89,7 +177,7 @@ MODEL RESULTS
             <p>看 <code>MATH ON SES</code>。<span class="highlight-green">P-Value = 0.000 (< 0.05)</span>，這代表在「同一個班級內部」比較時，學生的社經地位每提高 1 單位，數學成績預計顯著提升 <span class="highlight-yellow">0.425</span> 分。</p>
 
             <div class="level-title">2. Between Level (群體層次)</div>
-            <p>看 <code>MATH ON T_EXP</code>。請注意，這裡的 MATH 已經被 Mplus 轉成「班級平均成績」了。<span class="highlight-green">P-Value = 0.001 (< 0.05)</span>，這代表班級之間比較時，老師教學年資每高 1 年，該班的「平均」數學成績會顯著高出 <span class="highlight-yellow">0.612</span> 分。</p>
+            <p>看 <code>MATH ON T_EXP</code>。請注意，這裡的 MATH 已經被 Mplus 轉成「班級平均成績 (潛在變項)」了。<span class="highlight-green">P-Value = 0.001 (< 0.05)</span>，這代表班級之間比較時，老師教學年資每高 1 年，該班的「平均」數學成績會顯著高出 <span class="highlight-yellow">0.612</span> 分。</p>
         </div>
     </div>
 

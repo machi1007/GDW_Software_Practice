@@ -183,24 +183,49 @@ OUTPUT: STANDARDIZED MODINDICES;</pre>
     </div>
 
     <div class="step-container">
-        <h2>🏃 Step 3: 報表解讀重點</h2>
+        <h2>🏃 Step 3: MCFA 報表解讀重點</h2>
         
-        <h3>1. 檢視 ICC (組內相關係數)</h3>
-        <p>在做 MCFA 之前，報表會先吐出各題目的 <strong>Intraclass Correlation (ICC)</strong>：</p>
+        <p>跑完 MCFA，我們必須按順序檢查三大指標：<strong>ICC、Model Fit、因素負荷量</strong>。</p>
         
-        $$ ICC = \frac{\sigma^2_{Between}}{\sigma^2_{Between} + \sigma^2_{Within}} $$
-        
-        <div class="explanation-box">
-            <p><strong>ICC 的意義：</strong>ICC 代表「組間變異佔總變異的比例」。一般來說，如果題目的 ICC <strong>大於 0.05 (甚至 0.10)</strong>，代表班級與班級之間的差異夠大，這個資料才「值得」用多層次模型 (TWOLEVEL) 去做分析；如果 ICC 趨近於 0，代表班級之間沒什麼差別，直接用一般的 CFA 就可以了。</p>
-        </div>
+        <pre>
+Estimated Intraclass Correlations for the Y Variables
+  Variable      Intraclass Correlation
+  Y1            <span class="highlight-yellow">0.250</span>
+  Y2            <span class="highlight-yellow">0.220</span>
 
-        <h3>2. 檢視因素負荷量 (Factor Loadings) 與模型配適度</h3>
-        <p>因為我們加了 <code>STANDARDIZED</code>，請滑到報表的 <strong>STANDARDIZED MODEL RESULTS</strong> 區塊：</p>
-        <ul>
-            <li><strong>Within Level Loadings：</strong>確認 y1 到 y4 在 $F_W$ 上的標準化負荷量是否都大於 0.4 (或 0.5) 且達到顯著。這證明在個人層次題目具備收斂效度。</li>
-            <li><strong>Between Level Loadings：</strong>確認 y1 到 y4 在 $F_B$ 上的標準化負荷量。通常群體層次的負荷量會比個體層次<strong>更高</strong>，因為群體平均值已經去除了個人的隨機誤差。</li>
-            <li><strong>Model Fit (配適度指標)：</strong>查看 CFI、TLI (建議 > 0.90) 以及 RMSEA (建議 < 0.08)。如果配適度良好，恭喜你！這代表這個量表在兩個層次的測量結構都是成立的！</li>
-        </ul>
+MODEL FIT INFORMATION
+  RMSEA (Root Mean Square Error Of Approximation)
+    Estimate                           <span class="highlight-yellow">0.045</span>
+  CFI/TLI
+    CFI                                <span class="highlight-yellow">0.965</span>
+    TLI                                <span class="highlight-yellow">0.950</span>
+
+STANDARDIZED MODEL RESULTS
+                   <span class="highlight-yellow">Estimate</span>       S.E.  Est./S.E.    <span class="highlight-green">P-Value</span>
+<strong style="color:#d35400;">Within Level</strong>
+ F_W      BY
+    Y1                <span class="highlight-yellow">0.750</span>      0.040     18.750      <span class="highlight-green">0.000</span>
+    Y2                <span class="highlight-yellow">0.810</span>      0.035     23.142      <span class="highlight-green">0.000</span>
+
+<strong style="color:#d35400;">Between Level</strong>
+ F_B      BY
+    Y1                <span class="highlight-yellow">0.880</span>      0.050     17.600      <span class="highlight-green">0.000</span>
+    Y2                <span class="highlight-yellow">0.920</span>      0.045     20.444      <span class="highlight-green">0.000</span>
+        </pre>
+
+        <div class="explanation-box">
+            <h3>💡 報表白話文翻譯：</h3>
+            
+            <div class="level-title">1. 檢視 ICC (Intraclass Correlation)</div>
+            <p><strong>ICC 代表「組間變異佔總變異的比例」。</strong> 我們看到 Y1 的 ICC 是 <span class="highlight-yellow">0.250</span>（有 25% 的變異來自不同班級的差異）。一般來說，只要題目 ICC <strong>大於 0.05</strong>，代表班級間的差異夠大，就「必須」使用多層次模型 (TWOLEVEL)。如果 ICC 趨近於 0，代表大家都一樣，直接用一般 CFA 即可。</p>
+
+            <div class="level-title">2. 檢視配適度 (Model Fit)</div>
+            <p>這個模型的 CFI 為 <span class="highlight-yellow">0.965</span> (> 0.90)，TLI 為 <span class="highlight-yellow">0.950</span> (> 0.90)，RMSEA 為 <span class="highlight-yellow">0.045</span> (< 0.08)。各項指標皆達到優良標準，這代表我們假設的「雙層次測量模型」完美契合真實數據！</p>
+            
+            <div class="level-title">3. 檢視因素負荷量 (Factor Loadings: BY)</div>
+            <p><strong>Within Level：</strong> Y1 與 Y2 在個人層次 ($F_W$) 的標準化負荷量為 0.750 與 0.810 (<span class="highlight-green">p=0.000</span>)。大於 0.5，代表這份問卷在「學生個人感受」上具備良好的收斂效度。</p>
+            <p><strong>Between Level：</strong> 在群體層次 ($F_B$)，負荷量來到了 0.880 與 0.920。<strong>注意：通常群體層次的負荷量會比個體層次更高</strong>，這是因為計算群體平均值時，已經把學生個人的「隨機測量誤差」給抵銷掉了，所以信度往往更高！</p>
+        </div>
     </div>
 
     <script>

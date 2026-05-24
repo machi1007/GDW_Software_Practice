@@ -26,6 +26,10 @@
         .ai-btn { background: linear-gradient(135deg, #4facfe, #00f2fe); padding: 20px; font-size: 1.2rem; box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4); text-transform: uppercase; letter-spacing: 1px; border: 2px solid transparent; }
         .ai-btn:hover { background: linear-gradient(135deg, #00f2fe, #4facfe); transform: translateY(-4px); box-shadow: 0 12px 25px rgba(79, 172, 254, 0.6); }
 
+        /* 生存指南按鈕特效 */
+        .guide-btn { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); padding: 18px; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(253, 160, 133, 0.4); }
+        .guide-btn:hover { background: linear-gradient(135deg, #fda085 0%, #f6d365 100%); transform: translateY(-3px); }
+
         /* HLM 10 階實戰藍圖 */
         .hlm-container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border: 2px solid #c0392b; }
         .roadmap-list { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
@@ -57,9 +61,8 @@
         </div>
     </div>
 
-    <!-- 全新加入的 AI 工具區塊 -->
     <div class="section-header" style="margin-top: 0;">
-        <h2 style="margin:0; color: #2980b9;">✨ 獨家 AI 智能輔助系統</h2>
+        <h2 style="margin:0; color: #2980b9;">✨ AI輔助</h2>
         <hr>
     </div>
     
@@ -68,11 +71,20 @@
             🤖 進入 Mplus AI Ultimate MAX (報表解析 × 語法建構 × 學術防禦)
         </a>
     </div>
-    <p style="text-align: center; color: #7f8c8d; font-size: 0.9rem; margin-top: 0; margin-bottom: 40px;">
+    <p style="text-align: center; color: #7f8c8d; font-size: 0.9rem; margin-top: 0; margin-bottom: 30px;">
         💡 遇到 Error 或是不知道怎麼寫語法？把報表丟給 AI，一鍵自動產出神級解答！
     </p>
 
-    <!-- 原本的區塊 -->
+    <div class="section-header" style="margin-top: 0;">
+        <h2 style="margin:0; color: #e67e22;">📖 Mplus 語法</h2>
+        <hr>
+    </div>
+    <div class="menu-grid" style="grid-template-columns: 1fr; margin-bottom: 40px;">
+        <a href="syntax_guide.html" class="menu-item guide-btn">
+            🛡️ 點此進入：Mplus 語法終極解析手冊 (三大鐵律 × 核心拆解 × 修改防呆)
+        </a>
+    </div>
+
     <div class="section-header">
         <h2 style="margin:0;">📂 一般統計模型導覽 (General Models)</h2>
         <hr>
@@ -110,7 +122,7 @@
     <div class="hlm-container">
         <p style="margin-top: 0; color: #777;">專門針對多層次數據 (Nested Data) 的 Mplus 實作練習，從基礎模型到動態 SEM。</p>
         <div class="roadmap-list">
-            <a href="hlm.html" class="step">                <strong>Level 1</strong>                 <div class="topic">基礎兩層次模型 (隨機截距)</div>            </a>
+            <a href="hlm.html" class="step">                <strong>Level 1</strong>                <div class="topic">基礎兩層次模型 (隨機截距)</div>            </a>
             <a href="hlm2.html" class="step"><strong>Level 2</strong> <div class="topic">隨機斜率與跨層次交互作用</div></a>
             <a href="hlm3.html" class="step"><strong>Level 3</strong> <div class="topic">多層次中介效應分析</div></a>
             <a href="hlm4.html" class="step"><strong>Level 4</strong> <div class="topic">多層次路徑分析 (Multilevel Path)</div></a>
@@ -124,7 +136,7 @@
     </div>
 
     <footer style="margin-top: 50px; text-align: center; color: #aaa; font-size: 0.85rem;">
-        &copy; 2026 Guang-Duo Wang. 致力於推廣量化研究方法與評量科學。
+        &copy; 2026 Guang-Duo Wang.
     </footer>
 
 </body>
